@@ -34,8 +34,6 @@ namespace
 
     void compile_source_file(std::string const& code)
     {
-        dump_tokens(code);
-
         source::Buffer source_buffer(code);
         token::Buffer token_buffer(source_buffer);
 
@@ -70,7 +68,11 @@ int main(int argc, char* argv[])
 
     try
     {
+        dump_tokens(code);
+        std::cout << std::endl;
+
         compile_source_file(code);
+        std::cout << "Compile finished." << std::endl;
     }
     catch (std::exception& e)
     {
