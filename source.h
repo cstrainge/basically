@@ -19,9 +19,6 @@ namespace source
     std::ostream& operator <<(std::ostream& stream, Location const& location);
 
 
-    using OptionalChar = std::optional<char>;
-
-
     class Buffer
     {
         private:
