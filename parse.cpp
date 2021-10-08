@@ -98,7 +98,7 @@ namespace parse
         template <token::Type... token_types>
         token::Token expect_one_of(token::Buffer& buffer)
         {
-            const token::TypeSet expected_types({token_types...});
+            static const token::TypeSet expected_types({token_types...});
 
             auto found = buffer.next();
             auto iterator = expected_types.find(found.type);
@@ -232,14 +232,14 @@ namespace parse
 
 
         ast::StatementBlock parse_block_body_for(token::Buffer& buffer,
-                                                        token::Token const& start_token)
+                                                 token::Token const& start_token)
         {
             auto not_at_end = [&]() -> bool
                 {
                     auto next = buffer.peek_next();
 
                     return    (next.type != token::Type::KeywordEnd)
-                            && (next.type != token::Type::Eof);
+                           && (next.type != token::Type::Eof);
                 };
 
             ast::StatementBlock body_statements;
@@ -255,9 +255,8 @@ namespace parse
         }
 
 
-        ast::VaraibleDeclarationStatementPtr parse_variable_declaration(
-                                                                            token::Buffer& buffer,
-                                                                            token::Token& start_token)
+        ast::VaraibleDeclarationStatementPtr parse_variable_declaration(token::Buffer& buffer,
+                                                                        token::Token& start_token)
         {
             auto name_token = start_token.type != token::Type::Identifier ? expect_identifier(buffer)
                                                                         : start_token;
@@ -273,25 +272,28 @@ namespace parse
 
 
         ast::VaraibleDeclarationList parse_parameter_declarations(
-                                                token::Buffer& buffer,
-                                                token::Type const& delimiter = token::Type::SymbolComma,
-                                                token::Type const& end_token = token::Type::None)
+                                            token::Buffer& buffer,
+                                            token::Type const& delimiter = token::Type::SymbolComma,
+                                            token::Type const& end_token = token::Type::None)
         {
-            std::function<bool()> delimiter_check = [&]() -> bool
+            using CheckFunction = std::function<bool(token::Buffer&)>;
+
+            CheckFunction delimiter_check = [&](token::Buffer& buffer) -> bool
                 {
                     return found_optional_token(buffer, delimiter);
                 };
 
-            std::function<bool()> end_check = [&]() -> bool
+            CheckFunction end_check = [&](token::Buffer& buffer) -> bool
                 {
                     return !found_optional_token(buffer, end_token);
                 };
 
-            auto loop_should_continue = (delimiter != token::Type::None) ? delimiter_check : end_check;
+            auto loop_should_continue = (delimiter != token::Type::None) ? delimiter_check
+                                                                         : end_check;
 
             ast::VaraibleDeclarationList vars;
 
-            while (loop_should_continue())
+            while (loop_should_continue(buffer))
             {
                 if (buffer.peek_next().type == token::Type::Identifier)
                 {
@@ -353,8 +355,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_function_statement(token::Buffer& buffer,
-                                                    token::Token& function_token)
+        ast::Statement parse_function_statement(token::Buffer& buffer, token::Token& function_token)
         {
             auto name = expect_identifier(buffer);
             expect_open_bracket(buffer);
@@ -461,7 +462,8 @@ namespace parse
 
         ast::Statement parse_load_statement(token::Buffer& buffer, token::Token& load_token)
         {
-            return std::make_unique<ast::LoadStatement>(load_token.location, expect_identifier(buffer));
+            return std::make_unique<ast::LoadStatement>(load_token.location,
+                                                        expect_identifier(buffer));
         }
 
 
@@ -474,7 +476,7 @@ namespace parse
 
         ast::Statement parse_select_statement(token::Buffer& buffer, token::Token& select_token)
         {
-            auto found_case_end_tokens = [&]() -> bool
+            auto found_case_end_tokens = [](token::Buffer& buffer) -> bool
                 {
                     auto next = buffer.peek_next();
 
@@ -484,11 +486,11 @@ namespace parse
                           || (next.type == token::Type::KeywordCase);
                 };
 
-            auto parse_case_block_statements = [&]() -> ast::StatementBlock
+            auto parse_case_block_statements = [&](token::Buffer& buffer) -> ast::StatementBlock
                 {
                     ast::StatementBlock statements;
 
-                    while (!found_case_end_tokens())
+                    while (!found_case_end_tokens(buffer))
                     {
                         statements.push_back(parse_statement(buffer));
                     }
@@ -496,14 +498,14 @@ namespace parse
                     return statements;
                 };
 
-            auto parse_select_blocks = [&]() -> ast::ConditionalBlockList
+            auto parse_select_blocks = [&](token::Buffer& buffer) -> ast::ConditionalBlockList
                 {
                     ast::ConditionalBlockList block_list;
 
                     while (found_case(buffer))
                     {
                         auto test = parse_expression(buffer);
-                        auto body = parse_case_block_statements();
+                        auto body = parse_case_block_statements(buffer);
 
                         block_list.push_back(std::make_tuple(std::move(test), std::move(body)));
                     }
@@ -511,19 +513,19 @@ namespace parse
                     return block_list;
                 };
 
-            auto parse_default_block = [&]() -> ast::StatementBlock
+            auto parse_default_block = [&](token::Buffer& buffer) -> ast::StatementBlock
                 {
                     if (found_else(buffer))
                     {
-                        return parse_case_block_statements();
+                        return parse_case_block_statements(buffer);
                     }
 
                     return {};
                 };
 
             auto text_expression = parse_expression(buffer);
-            auto blocks = parse_select_blocks();
-            auto default_block = parse_default_block();
+            auto blocks = parse_select_blocks(buffer);
+            auto default_block = parse_default_block(buffer);
 
             expect_end_for(buffer, select_token);
 
@@ -535,7 +537,7 @@ namespace parse
 
 
         ast::Statement parse_structure_statement(token::Buffer& buffer,
-                                                        token::Token& structure_token)
+                                                 token::Token& structure_token)
         {
             auto name = expect_identifier(buffer);
             auto members = parse_parameter_declarations(buffer,
@@ -551,14 +553,14 @@ namespace parse
 
 
         ast::Statement parse_variable_declaration_statement(token::Buffer& buffer,
-                                                                token::Token& var_token)
+                                                            token::Token& var_token)
         {
             return parse_variable_declaration(buffer, var_token);
         }
 
 
         ast::Statement parse_identifier_statement(token::Buffer& buffer,
-                                                        token::Token& identifier_token)
+                                                  token::Token& identifier_token)
         {
             auto next = expect_one_of<token::Type::SymbolOpenBracket,
                                     token::Type::SymbolAssign>(buffer);
@@ -567,8 +569,8 @@ namespace parse
                 {
                     auto value = parse_expression(buffer);
                     return std::make_unique<ast::AssignmentStatement>(next.location,
-                                                                    identifier_token,
-                                                                    std::move(value));
+                                                                      identifier_token,
+                                                                      std::move(value));
                 };
 
             auto parse_sub_call_statement = [&]() -> ast::Statement
@@ -577,8 +579,8 @@ namespace parse
                     expect_close_bracket(buffer);
 
                     return std::make_unique<ast::SubCallStatement>(identifier_token.location,
-                                                                identifier_token,
-                                                                std::move(parameters));
+                                                                   identifier_token,
+                                                                   std::move(parameters));
                 };
 
             if (next.type == token::Type::SymbolAssign)
