@@ -1,0 +1,9 @@
+
+{
+    "files.exclude":
+    {
+        "**/.git": true,
+        "**/basicly": true,
+        "**/basicly-r": true
+    }
+}
