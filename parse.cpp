@@ -380,9 +380,9 @@ namespace parse
                 {
                     auto next = buffer.peek_next();
 
-                    return    (next.type == token::Type::Eof)
-                        || (next.type == token::Type::KeywordEnd)
-                        || (next.type == token::Type::KeywordElse);
+                    return   (next.type == token::Type::Eof)
+                          || (next.type == token::Type::KeywordEnd)
+                          || (next.type == token::Type::KeywordElse);
                 };
 
             auto got_optional_else_if_tokens = [&]() -> bool
@@ -478,10 +478,10 @@ namespace parse
                 {
                     auto next = buffer.peek_next();
 
-                    return    (next.type == token::Type::Eof)
-                        || (next.type == token::Type::KeywordEnd)
-                        || (next.type == token::Type::KeywordElse)
-                        || (next.type == token::Type::KeywordCase);
+                    return   (next.type == token::Type::Eof)
+                          || (next.type == token::Type::KeywordEnd)
+                          || (next.type == token::Type::KeywordElse)
+                          || (next.type == token::Type::KeywordCase);
                 };
 
             auto parse_case_block_statements = [&]() -> ast::StatementBlock
