@@ -4,3 +4,6 @@ sample/
 
 basicly
 basicly-r
+
+*.o
+*.gch

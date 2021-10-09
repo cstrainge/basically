@@ -5,11 +5,7 @@
  *
  * ---------------------------------------------------------------------------------------------- */
 
-#include "std_inc.h"
-#include "source.h"
-#include "token.h"
-#include "ast.h"
-#include "parse.h"
+#include "basicly.h"
 
 
 namespace
@@ -18,6 +14,10 @@ namespace
 
     void dump_tokens(std::string const& code)
     {
+        std::cout << "Original source:" << std::endl
+                  << code << std::endl
+                  << "Found tokens:" << std::endl;
+
         source::Buffer source_buffer(code);
         token::Buffer token_buffer(source_buffer);
 
@@ -26,7 +26,7 @@ namespace
         do
         {
             next = token_buffer.next();
-            std::cout << next << std::endl;
+            std::cout << "    " << next << std::endl;
         }
         while (next.type != token::Type::Eof);
     }
