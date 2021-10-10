@@ -1,25 +1,31 @@
 
 CXX = g++-10
-objects = source.o token.o ast.o parse.o basicly.o
-pch_src = basicly.h
-pch = $(pch_src).gch
-libs = -lgccjit
+
+sources = source.cpp token.cpp ast.cpp parse.cpp basicly.cpp
+objects = $(sources:.cpp=.o)
+headers = $(sources:.cpp=.h) std_inc.h
+
 executable = basicly
 
-cxx_flags = -g -std=c++20 -fdiagnostics-color=always
+pch_src = basicly.h
+pch = $(pch_src).gch
+
+libs = -lgccjit
+
+cxx_flags = -std=c++20 -fdiagnostics-color=always -g -O0
 
 
 
-.PHONY: all clean
+.PHONY: all clean release debug
 
 
 
-all: basicly
+all: $(executable)
 
 
 
 clean:
-	rm -f $(objects) $(pch) $(executable)
+	rm -f $(objects) $(pch) $(executable) $(executable)-d
 
 
 
@@ -28,22 +34,10 @@ $(executable): $(pch) $(objects)
 
 
 
-$(pch): std_inc.h basicly.h source.h token.h ast.h parse.h
+$(pch): $(headers)
 	$(CXX) $(cxx_flags) -x c++-header -o $(pch) -c $(pch_src)
 
 
 
-source.o: source.cpp $(pch)
-	$(CXX) $(cxx_flags) -c source.cpp
-
-token.o: token.cpp $(pch)
-	$(CXX) $(cxx_flags) -c token.cpp
-
-ast.o: ast.cpp $(pch)
-	$(CXX) $(cxx_flags) -c ast.cpp
-
-parse.o: parse.cpp $(pch)
-	$(CXX) $(cxx_flags) -c parse.cpp
-
-basicly.o: basicly.cpp $(pch)
-	$(CXX) $(cxx_flags) -c basicly.cpp
+$(objects): $(sources) $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
