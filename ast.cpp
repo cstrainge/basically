@@ -252,7 +252,7 @@ namespace ast
 
     SubDeclarationStatement::SubDeclarationStatement(source::Location const& new_location,
                                                      token::Token const& new_name,
-                                                     VaraibleDeclarationList&& new_parameters,
+                                                     VariableDeclarationList&& new_parameters,
                                                      StatementBlock&& new_body)
     : StatementBase(new_location),
       name(new_name),
@@ -268,7 +268,7 @@ namespace ast
     }
 
 
-    VaraibleDeclarationList const& SubDeclarationStatement::get_parameters() const noexcept
+    VariableDeclarationList const& SubDeclarationStatement::get_parameters() const noexcept
     {
         return parameters;
     }
@@ -285,7 +285,7 @@ namespace ast
     FunctionDeclarationStatement::FunctionDeclarationStatement(
                                                            source::Location const& new_location,
                                                            token::Token const& new_name,
-                                                           VaraibleDeclarationList&& new_parameters,
+                                                           VariableDeclarationList&& new_parameters,
                                                            token::Token const& new_return_type,
                                                            StatementBlock&& new_body)
     : SubDeclarationStatement(new_location,
@@ -403,7 +403,7 @@ namespace ast
 
     StructureDeclarationStatement::StructureDeclarationStatement(source::Location const& new_location,
                                                                  token::Token const& new_name,
-                                                                 VaraibleDeclarationList&& new_members)
+                                                                 VariableDeclarationList&& new_members)
     : StatementBase(new_location),
       name(new_name),
       members(std::move(new_members))
@@ -417,7 +417,7 @@ namespace ast
     }
 
 
-    VaraibleDeclarationList const& StructureDeclarationStatement::get_members() const noexcept
+    VariableDeclarationList const& StructureDeclarationStatement::get_members() const noexcept
     {
         return members;
     }
@@ -425,7 +425,7 @@ namespace ast
 
 
 
-    VaraibleDeclarationStatement::VaraibleDeclarationStatement(source::Location const& new_location,
+    VariableDeclarationStatement::VariableDeclarationStatement(source::Location const& new_location,
                                                                token::Token const& new_name,
                                                                token::Token const& new_type_name,
                                                                Expression&& new_initilizer)
@@ -437,19 +437,19 @@ namespace ast
     }
 
 
-    token::Token const& VaraibleDeclarationStatement::get_name() const noexcept
+    token::Token const& VariableDeclarationStatement::get_name() const noexcept
     {
         return name;
     }
 
 
-    token::Token const& VaraibleDeclarationStatement::get_type_name() const noexcept
+    token::Token const& VariableDeclarationStatement::get_type_name() const noexcept
     {
         return type_name;
     }
 
 
-    Expression const& VaraibleDeclarationStatement::get_initilizer() const noexcept
+    Expression const& VariableDeclarationStatement::get_initilizer() const noexcept
     {
         return initilizer;
     }

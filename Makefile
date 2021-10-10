@@ -18,11 +18,7 @@ cxx_flags = -std=c++20 -fdiagnostics-color=always -g -O0
 
 .PHONY: all clean release debug
 
-
-
 all: $(executable)
-
-
 
 clean:
 	rm -f $(objects) $(pch) $(executable) $(executable)-d
@@ -39,5 +35,17 @@ $(pch): $(headers)
 
 
 
-$(objects): $(sources) $(pch)
+source.o: source.cpp $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
+
+token.o: token.cpp $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
+
+ast.o: ast.cpp $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
+
+parse.o: parse.cpp $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
+
+basicly.o: basicly.cpp $(pch)
 	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o

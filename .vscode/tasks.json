@@ -21,7 +21,7 @@
 
             "presentation":
             {
-                "echo": true,
+                "echo": false,
                 "reveal": "always",
                 "focus": true,
                 "panel": "dedicated",

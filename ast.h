@@ -66,10 +66,10 @@ namespace ast
     using ConditionalBlockList = std::list<ConditionalBlock>;
 
 
-    class VaraibleDeclarationStatement;
+    class VariableDeclarationStatement;
 
-    using VaraibleDeclarationStatementPtr = std::unique_ptr<VaraibleDeclarationStatement>;
-    using VaraibleDeclarationList = std::list<VaraibleDeclarationStatementPtr>;
+    using VariableDeclarationStatementPtr = std::unique_ptr<VariableDeclarationStatement>;
+    using VariableDeclarationList = std::list<VariableDeclarationStatementPtr>;
 
 
     class LiteralExpression : public ExpressionBase
@@ -218,18 +218,18 @@ namespace ast
     {
         private:
             token::Token name;
-            VaraibleDeclarationList parameters;
+            VariableDeclarationList parameters;
             StatementBlock body;
 
         public:
             SubDeclarationStatement(source::Location const& new_location,
                                     token::Token const& name,
-                                    VaraibleDeclarationList&& parameters,
+                                    VariableDeclarationList&& parameters,
                                     StatementBlock&& body);
 
         public:
             token::Token const& get_name() const noexcept;
-            VaraibleDeclarationList const& get_parameters() const noexcept;
+            VariableDeclarationList const& get_parameters() const noexcept;
             StatementBlock const& get_body() const noexcept;
     };
 
@@ -242,7 +242,7 @@ namespace ast
         public:
             FunctionDeclarationStatement(source::Location const& new_location,
                                          token::Token const& name,
-                                         VaraibleDeclarationList&& parameters,
+                                         VariableDeclarationList&& parameters,
                                          token::Token const& return_type,
                                          StatementBlock&& body);
 
@@ -323,20 +323,20 @@ namespace ast
     {
         private:
             token::Token name;
-            VaraibleDeclarationList members;
+            VariableDeclarationList members;
 
         public:
             StructureDeclarationStatement(source::Location const& new_location,
                                           token::Token const& new_name,
-                                          VaraibleDeclarationList&& new_members);
+                                          VariableDeclarationList&& new_members);
 
         public:
             token::Token const& get_name() const noexcept;
-            VaraibleDeclarationList const& get_members() const noexcept;
+            VariableDeclarationList const& get_members() const noexcept;
     };
 
 
-    class VaraibleDeclarationStatement : public StatementBase
+    class VariableDeclarationStatement : public StatementBase
     {
         private:
             token::Token name;
@@ -344,7 +344,7 @@ namespace ast
             Expression initilizer;
 
         public:
-            VaraibleDeclarationStatement(source::Location const& new_location,
+            VariableDeclarationStatement(source::Location const& new_location,
                                          token::Token const& new_name,
                                          token::Token const& new_type_name,
                                          Expression&& new_initilizer);

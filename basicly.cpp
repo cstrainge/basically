@@ -45,20 +45,16 @@ namespace
 
 
 const std::string code = R"code(
-
 # This is a starting point!
 
-structure teh_datas
-    a as i32
-    b as i32
-    c as string
-end structure
+var int_val as i32 = 1024
+var str_val as string = "Hello world."
 
-var int_val as i32
-var float_val as i64
+function foo(x as i32) as i32
+    foo = 1024 - x
+end function
 
-# int_val = 10
-
+var x as i32 = foo(48)
 )code";
 
 

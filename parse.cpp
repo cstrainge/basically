@@ -195,9 +195,9 @@ namespace parse
         }
 
 
-        bool found_equal(token::Buffer& buffer)
+        bool found_assign(token::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::SymbolEqual);
+            return found_optional_token(buffer, token::Type::SymbolAssign);
         }
 
 
@@ -400,53 +400,60 @@ namespace parse
         }
 
 
-        ast::VaraibleDeclarationStatementPtr parse_variable_declaration(token::Buffer& buffer,
-                                                                        token::Token& start_token)
+        ast::VariableDeclarationStatementPtr parse_variable_declaration(
+                                                                    token::Buffer& buffer,
+                                                                    token::Token const& start_token)
         {
             auto name_token = start_token.type != token::Type::Identifier
-                                                  ? expect_identifier(buffer)
-                                                  : start_token;
-            expect_as(buffer);
-            auto type_token = expect_identifier(buffer);
-            auto value = found_equal(buffer) ? parse_expression(buffer) : nullptr;
+                ? expect_identifier(buffer)
+                : start_token;
 
-            return std::make_unique<ast::VaraibleDeclarationStatement>(start_token.location,
+            expect_as(buffer);
+
+            auto type_token = expect_identifier(buffer);
+            auto value = found_assign(buffer) ? parse_expression(buffer) : nullptr;
+
+            return std::make_unique<ast::VariableDeclarationStatement>(start_token.location,
                                                                     name_token,
                                                                     type_token,
                                                                     std::move(value));
         }
 
 
-        ast::VaraibleDeclarationList parse_parameter_declarations(
-                                            token::Buffer& buffer,
-                                            token::Type const& delimiter = token::Type::SymbolComma,
-                                            token::Type const& end_token = token::Type::None)
+        ast::VariableDeclarationList parse_parameter_declarations(
+                                                   token::Buffer& buffer,
+                                                   token::Type delimiter = token::Type::SymbolComma,
+                                                   token::Type end_token = token::Type::None)
         {
-            using CheckFunction = std::function<bool(token::Buffer&)>;
-
-            CheckFunction delimiter_check = [&](token::Buffer& buffer) -> bool
+            auto not_at_end = [&](token::Token const& next) -> bool
                 {
-                    return found_optional_token(buffer, delimiter);
+                    if (   (delimiter != token::Type::None)
+                        && (next.type == delimiter))
+                    {
+                        return true;
+                    }
+
+                    return next.type != end_token;
                 };
 
-            CheckFunction end_check = [&](token::Buffer& buffer) -> bool
-                {
-                    return !found_optional_token(buffer, end_token);
-                };
+            ast::VariableDeclarationList vars;
+            token::Token next;
 
-            auto loop_should_continue = (delimiter != token::Type::None) ? delimiter_check
-                                                                         : end_check;
-
-            ast::VaraibleDeclarationList vars;
-
-            while (loop_should_continue(buffer))
+            do
             {
-                if (buffer.peek_next().type == token::Type::Identifier)
+                next = buffer.peek_next();
+
+                if (next != end_token)
                 {
-                    auto identifier = expect_identifier(buffer);
-                    vars.push_back(parse_variable_declaration(buffer, identifier));
+                    vars.push_back(parse_variable_declaration(buffer, {}));
+
+                    if (!found_optional_token(buffer, delimiter))
+                    {
+                        next = { .type = end_token };
+                    }
                 }
             }
+            while (not_at_end(next));
 
             return vars;
         }
