@@ -237,6 +237,12 @@ namespace parse
         }
 
 
+        bool found_comma(token::Buffer& buffer)
+        {
+            return found_optional_token(buffer, token::Type::SymbolComma);
+        }
+
+
         ast::Expression parse_literal_expression(token::Buffer& buffer, token::Token const& literal)
         {
             return std::make_unique<ast::LiteralExpression>(literal);
@@ -358,7 +364,15 @@ namespace parse
 
         ast::ExpressionList parse_parameter_expressions(token::Buffer& buffer)
         {
-            return {};
+            ast::ExpressionList expressions;
+
+            do
+            {
+                expressions.push_back(parse_expression(buffer));
+            }
+            while (found_comma(buffer));
+
+            return expressions;
         }
 
 
