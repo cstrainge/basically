@@ -10,7 +10,7 @@ namespace parse
     {
 
 
-        enum class Precedence : size_t
+        enum class Precedence : unsigned int
         {
             None = 0,
 
@@ -23,7 +23,7 @@ namespace parse
 
         bool operator <(Precedence lhs, Precedence rhs)
         {
-            return static_cast<size_t>(lhs) < static_cast<size_t>(rhs);
+            return static_cast<unsigned int>(lhs) < static_cast<unsigned int>(rhs);
         }
 
 
