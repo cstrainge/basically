@@ -7,25 +7,9 @@
         {
             "type": "cppbuild",
             "label": "C/C++ Build",
-            "command": "/usr/bin/g++-10",
 
-            "args":
-            [
-                "-fdiagnostics-color=always",
-
-                "-g",
-                "-std=c++20",
-
-                "basicly.cpp",
-                "source.cpp",
-                "token.cpp",
-                "ast.cpp",
-                "parse.cpp",
-
-                "-lgccjit",
-
-                "-o", "basicly"
-            ],
+            "command": "/usr/bin/make",
+            "args": [],
 
             "options":
             {

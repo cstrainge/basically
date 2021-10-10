@@ -6,7 +6,7 @@ pch = $(pch_src).gch
 libs = -lgccjit
 executable = basicly
 
-cxx_flags = -g -std=c++20
+cxx_flags = -g -std=c++20 -fdiagnostics-color=always
 
 
 
