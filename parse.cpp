@@ -10,15 +10,34 @@ namespace parse
     {
 
 
-        using StatementHandler = std::function<ast::Statement(token::Buffer&, token::Token&)>;
+        enum class Precedence : size_t
+        {
+            None = 0,
 
-        using StatementHandlerMap = std::unordered_map<token::Type, StatementHandler>;
+            Conditional = 1,
+            Equality = 2,
+            Sum = 3,
+            Product = 4
+        };
 
+
+        bool operator <(Precedence lhs, Precedence rhs)
+        {
+            return static_cast<size_t>(lhs) < static_cast<size_t>(rhs);
+        }
+
+
+        ast::Expression parse_expression(token::Buffer& buffer,
+                                         Precedence precedence = Precedence::None);
+
+        ast::ExpressionList parse_parameter_expressions(token::Buffer& buffer);
 
         ast::Statement parse_statement(token::Buffer& buffer);
 
 
-        std::ostream& operator <<(std::ostream& stream, StatementHandlerMap const& value)
+        template <typename ItemType>
+        std::ostream& operator <<(std::ostream& stream,
+                                  std::unordered_map<token::Type, ItemType> const& value)
         {
             token::TypeSet types;
 
@@ -29,33 +48,24 @@ namespace parse
         }
 
 
+        using PrefixHandler = std::function<ast::Expression(token::Buffer&, token::Token const&)>;
+        using PrefixHandlerMap = std::unordered_map<token::Type, PrefixHandler>;
+
+        using InfixHandler = std::function<ast::Expression(token::Buffer&, ast::Expression&, token::Token const&)>;
+        using InfixHandlerMap = std::unordered_map<token::Type, Precedence>;
+
+
+        using StatementHandler = std::function<ast::Statement(token::Buffer&, token::Token&)>;
+        using StatementHandlerMap = std::unordered_map<token::Type, StatementHandler>;
+
+
         [[noreturn]]
-        void exception(std::string const& message, source::Location const& location)
+        void parse_exception(std::string const& message, source::Location const& location)
         {
             std::stringstream message_stream;
 
             message_stream << "Error " << location << ": " << message;
             throw std::runtime_error(message_stream.str());
-        }
-
-
-        [[noreturn]]
-        void unexpected_token_exception(token::Token const& token)
-        {
-            std::stringstream message_stream;
-
-            message_stream << "Unexpectedly found " << token.type;
-
-            if (!token.text.empty())
-            {
-                message_stream << ", \"" << token.text << ".\"";
-            }
-            else
-            {
-                message_stream << ".";
-            }
-
-            exception(message_stream.str(), token.location);
         }
 
 
@@ -74,7 +84,7 @@ namespace parse
 
             message_stream << " instead.";
 
-            exception(message_stream.str(), found.location);
+            parse_exception(message_stream.str(), found.location);
         }
 
 
@@ -150,6 +160,12 @@ namespace parse
         }
 
 
+        void expect_close_square_bracket(token::Buffer& buffer)
+        {
+            expect_token(buffer, token::Type::SymbolCloseSquare);
+        }
+
+
         void expect_end_for(token::Buffer& buffer, token::Token const& start_token)
         {
             expect_token(buffer, token::Type::KeywordEnd);
@@ -215,9 +231,128 @@ namespace parse
         }
 
 
-        ast::Expression parse_expression(token::Buffer& buffer, size_t precidence = 0)
+        bool found_open_square_bracket(token::Buffer& buffer)
         {
-            return {};
+            return found_optional_token(buffer, token::Type::SymbolOpenSquare);
+        }
+
+
+        ast::Expression parse_literal_expression(token::Buffer& buffer, token::Token const& literal)
+        {
+            return std::make_unique<ast::LiteralExpression>(literal);
+        }
+
+
+        ast::Expression parse_call_expression(token::Buffer& buffer, token::Token const& name)
+        {
+            expect_open_bracket(buffer);
+            auto parameters = parse_parameter_expressions(buffer);
+            expect_close_bracket(buffer);
+
+            return std::make_unique<ast::FunctionCallExpression>(name, std::move(parameters));
+        }
+
+
+        ast::Expression parse_name_expression(token::Buffer& buffer, token::Token const& name)
+        {
+            if (buffer.peek_next().type == token::Type::SymbolOpenBracket)
+            {
+                return parse_call_expression(buffer, name);
+            }
+
+            ast::Expression subscript;
+
+            if (found_open_square_bracket(buffer))
+            {
+                subscript = parse_expression(buffer);
+                expect_close_square_bracket(buffer);
+            }
+
+            return std::make_unique<ast::VariableReadExpression>(name, std::move(subscript));
+        }
+
+
+        ast::Expression parse_group_expression(token::Buffer& buffer, token::Token const& open)
+        {
+            auto expression = parse_expression(buffer);
+            expect_close_bracket(buffer);
+
+            return expression;
+        }
+
+
+        ast::Expression parse_binary_expression(token::Buffer& buffer,
+                                                Precedence precedence,
+                                                ast::Expression&& left,
+                                                token::Token const& operator_token)
+        {
+            return std::make_unique<ast::BinaryExpression>(operator_token,
+                                                           std::move(left),
+                                                           parse_expression(buffer, precedence));
+        }
+
+
+        ast::Expression parse_expression(token::Buffer& buffer, Precedence precedence)
+        {
+            static const PrefixHandlerMap prefix_handlers =
+                {
+                    { token::Type::LiteralFloat,      parse_literal_expression },
+                    { token::Type::LiteralInt,        parse_literal_expression },
+                    { token::Type::LiteralString,     parse_literal_expression },
+                    { token::Type::Identifier,        parse_name_expression    },
+                    { token::Type::SymbolOpenBracket, parse_group_expression   }
+                };
+
+            static const InfixHandlerMap infix_handlers =
+                {
+                    { token::Type::SymbolPlus,        Precedence::Sum },
+                    { token::Type::SymbolMinus,       Precedence::Sum },
+                    { token::Type::SymbolTimes,       Precedence::Product },
+                    { token::Type::SymbolDivide,      Precedence::Product },
+
+                    { token::Type::SymbolEqual,       Precedence::Equality },
+                    { token::Type::SymbolNotEqual,    Precedence::Equality },
+                    { token::Type::SymbolGreaterThan, Precedence::Equality },
+                    { token::Type::SymbolLessThan,    Precedence::Equality },
+
+                    { token::Type::KeywordNot,        Precedence::Conditional },
+                    { token::Type::KeywordAnd,        Precedence::Conditional },
+                    { token::Type::KeywordOr,         Precedence::Conditional }
+                };
+
+            auto peek_next_precedence = [&]() -> Precedence
+                {
+                    auto infix_iter = infix_handlers.find(buffer.peek_next().type);
+
+                    return infix_iter != infix_handlers.end() ? infix_iter->second
+                                                              : Precedence::None;
+                };
+
+            auto next = buffer.next();
+            auto prefix_iter = prefix_handlers.find(next.type);
+
+            if (prefix_iter == prefix_handlers.end())
+            {
+                expected_token_exception(prefix_handlers, next);
+            }
+
+            auto prefix_handler = prefix_iter->second;
+            auto left_expression = prefix_handler(buffer, next);
+
+            auto next_precedence = peek_next_precedence();
+
+            while (precedence < next_precedence)
+            {
+                next = buffer.next();
+                left_expression = parse_binary_expression(buffer,
+                                                          next_precedence,
+                                                          std::move(left_expression),
+                                                          next);
+
+                next_precedence = peek_next_precedence();
+            }
+
+            return left_expression;
         }
 
 

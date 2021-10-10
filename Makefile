@@ -10,6 +10,10 @@ cxx_flags = -g -std=c++20
 
 
 
+.PHONY: all clean
+
+
+
 all: basicly
 
 
