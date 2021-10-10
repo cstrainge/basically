@@ -4,6 +4,8 @@
     {
         "**/.git": true,
         "**/basicly": true,
-        "**/basicly-r": true
+        "**/basicly-r": true,
+        "**/basicly.h.gch": true,
+        "**/temp": true
     }
 }
