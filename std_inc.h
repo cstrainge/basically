@@ -17,9 +17,11 @@
 #include <functional>
 #include <stdexcept>
 #include <compare>
+#include <variant>
 
 #include <libgccjit.h>
 
 
 using OptionalChar = std::optional<char>;
 using OptionalString = std::optional<std::string>;
+using OptionalSize = std::optional<size_t>;
