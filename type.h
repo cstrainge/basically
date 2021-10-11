@@ -73,8 +73,8 @@ namespace type
         size_t array_count;
         bool is_const;
 
-        bool is_array();
-        size_t size();
+        bool is_array() const noexcept;
+        size_t size() const noexcept;
     };
 
 
@@ -93,7 +93,7 @@ namespace type
 
 
     using SubInfoPtr = std::shared_ptr<SubInfo>;
-    using SubInfoMap = std::shared_ptr<SubInfoPtr>;
+    using SubInfoMap = std::unordered_map<std::string, SubInfoPtr>;
 
 
     struct FunctionInfo : public SubInfo
@@ -103,39 +103,45 @@ namespace type
 
 
     using FunctionInfoPtr = std::shared_ptr<FunctionInfo>;
-    using FunctionInfoMap = std::shared_ptr<FunctionInfoPtr>;
+    using FunctionInfoMap = std::unordered_map<std::string, FunctionInfoPtr>;
 
 
-    struct Namespace;
+    class Namespace;
     using NamespacePtr = std::shared_ptr<Namespace>;
     using NamespaceMap = std::unordered_map<std::string, NamespacePtr>;
 
 
-    struct Namespace
-    {
-        NamespacePtr parent;
-        NamespaceMap children;
-
-        TypeInfoMap types;
-        VariableInfoMap variables;
-        SubInfoMap subs;
-        FunctionInfoMap functions;
-    };
-
-
-    class Module;
-    using ModulePtr = std::shared_ptr<Module>;
-    using ModuleMap = std::unordered_map<std::string, ModulePtr>;
-
-
-    class Module
+    class Namespace
     {
         private:
-            Namespace contents;
+            NamespacePtr parent;
+            NamespaceMap children;
+
+            TypeInfoMap types;
+            VariableInfoMap variables;
+            SubInfoMap subs;
+            FunctionInfoMap functions;
 
         public:
-            Module(ast::StatementList const& block);
-            ~Module();
+            Namespace() = default;
+            ~Namespace() = default;
+
+        public:
+            void insert(TypeInfoPtr const& item);
+            void insert(VariableInfoPtr const& item);
+            void insert(SubInfoPtr const& item);
+            void insert(FunctionInfoPtr const& item);
+
+        public:
+            TypeInfoPtr find_type(std::string const& name) const noexcept;
+            VariableInfoPtr find_variable(std::string const& name) const noexcept;
+            SubInfoPtr find_sub(std::string const& name) const noexcept;
+            FunctionInfoPtr find_function(std::string const& name) const noexcept;
+
+        private:
+            template <typename ItemType>
+            ItemType find_item(std::unordered_map<std::string, ItemType> const& map,
+                                std::string const& name) const noexcept;
     };
 
 
