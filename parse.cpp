@@ -245,7 +245,7 @@ namespace parse
 
         ast::Expression parse_literal_expression(token::Buffer& buffer, token::Token const& literal)
         {
-            return std::make_unique<ast::LiteralExpression>(literal);
+            return std::make_shared<ast::LiteralExpression>(literal);
         }
 
 
@@ -255,7 +255,7 @@ namespace parse
             auto parameters = parse_parameter_expressions(buffer);
             expect_close_bracket(buffer);
 
-            return std::make_unique<ast::FunctionCallExpression>(name, std::move(parameters));
+            return std::make_shared<ast::FunctionCallExpression>(name, parameters);
         }
 
 
@@ -274,7 +274,7 @@ namespace parse
                 expect_close_square_bracket(buffer);
             }
 
-            return std::make_unique<ast::VariableReadExpression>(name, std::move(subscript));
+            return std::make_shared<ast::VariableReadExpression>(name, subscript);
         }
 
 
@@ -289,11 +289,11 @@ namespace parse
 
         ast::Expression parse_binary_expression(token::Buffer& buffer,
                                                 Precedence precedence,
-                                                ast::Expression&& left,
+                                                ast::Expression const& left,
                                                 token::Token const& operator_token)
         {
-            return std::make_unique<ast::BinaryExpression>(operator_token,
-                                                           std::move(left),
+            return std::make_shared<ast::BinaryExpression>(operator_token,
+                                                           left,
                                                            parse_expression(buffer, precedence));
         }
 
@@ -352,7 +352,7 @@ namespace parse
                 next = buffer.next();
                 left_expression = parse_binary_expression(buffer,
                                                           next_precedence,
-                                                          std::move(left_expression),
+                                                          left_expression,
                                                           next);
 
                 next_precedence = peek_next_precedence();
@@ -413,10 +413,10 @@ namespace parse
             auto type_token = expect_identifier(buffer);
             auto value = found_assign(buffer) ? parse_expression(buffer) : nullptr;
 
-            return std::make_unique<ast::VariableDeclarationStatement>(start_token.location,
+            return std::make_shared<ast::VariableDeclarationStatement>(start_token.location,
                                                                     name_token,
                                                                     type_token,
-                                                                    std::move(value));
+                                                                    value);
         }
 
 
@@ -467,10 +467,10 @@ namespace parse
             auto loop_test = parse_expression(buffer);
             auto loop_body = parse_block_body_for(buffer, do_token);
 
-            return std::make_unique<ast::DoStatement>(do_token.location,
+            return std::make_shared<ast::DoStatement>(do_token.location,
                                                       terminator,
-                                                      std::move(loop_test),
-                                                      std::move(loop_body));
+                                                      loop_test,
+                                                      loop_body);
         }
 
 
@@ -484,12 +484,12 @@ namespace parse
             auto step_value = found_step(buffer) ? parse_expression(buffer) : nullptr;
             auto loop_body = parse_block_body_for(buffer, for_token);
 
-            return std::make_unique<ast::ForStatement>(for_token.location,
+            return std::make_shared<ast::ForStatement>(for_token.location,
                                                        index_name,
-                                                       std::move(start_index),
-                                                       std::move(end_index),
-                                                       std::move(step_value),
-                                                       std::move(loop_body));
+                                                       start_index,
+                                                       end_index,
+                                                       step_value,
+                                                       loop_body);
         }
 
 
@@ -501,10 +501,10 @@ namespace parse
             expect_close_bracket(buffer);
             auto sub_body = parse_block_body_for(buffer, sub_token);
 
-            return std::make_unique<ast::SubDeclarationStatement>(sub_token.location,
+            return std::make_shared<ast::SubDeclarationStatement>(sub_token.location,
                                                                   name,
-                                                                  std::move(parameters),
-                                                                  std::move(sub_body));
+                                                                  parameters,
+                                                                  sub_body);
         }
 
 
@@ -518,11 +518,11 @@ namespace parse
             auto return_type = expect_identifier(buffer);
             auto function_body = parse_block_body_for(buffer, function_token);
 
-            return std::make_unique<ast::FunctionDeclarationStatement>(function_token.location,
+            return std::make_shared<ast::FunctionDeclarationStatement>(function_token.location,
                                                                        name,
-                                                                       std::move(parameters),
+                                                                       parameters,
                                                                        return_type,
-                                                                       std::move(function_body));
+                                                                       function_body);
         }
 
 
@@ -575,7 +575,7 @@ namespace parse
                     expect_then();
                     auto body = parse_if_block_statements();
 
-                    return std::make_tuple(std::move(test), std::move(body));
+                    return std::make_tuple(test, body);
                 };
 
             auto parse_else_if_blocks = [&]() -> ast::ConditionalBlockList
@@ -606,23 +606,23 @@ namespace parse
 
             expect_end_for(buffer, if_token);
 
-            return std::make_unique<ast::IfStatement>(if_token.location,
-                                                      std::move(if_head),
-                                                      std::move(else_if_blocks),
-                                                      std::move(else_block));
+            return std::make_shared<ast::IfStatement>(if_token.location,
+                                                      if_head,
+                                                      else_if_blocks,
+                                                      else_block);
         }
 
 
         ast::Statement parse_load_statement(token::Buffer& buffer, token::Token& load_token)
         {
-            return std::make_unique<ast::LoadStatement>(load_token.location,
+            return std::make_shared<ast::LoadStatement>(load_token.location,
                                                         expect_identifier(buffer));
         }
 
 
         ast::Statement parse_loop_statement(token::Buffer& buffer, token::Token& loop_token)
         {
-            return std::make_unique<ast::LoopStatement>(loop_token.location,
+            return std::make_shared<ast::LoopStatement>(loop_token.location,
                                                         parse_block_body_for(buffer, loop_token));
         }
 
@@ -660,7 +660,7 @@ namespace parse
                         auto test = parse_expression(buffer);
                         auto body = parse_case_block_statements(buffer);
 
-                        block_list.push_back(std::make_tuple(std::move(test), std::move(body)));
+                        block_list.push_back(std::make_tuple(test, body));
                     }
 
                     return block_list;
@@ -682,10 +682,10 @@ namespace parse
 
             expect_end_for(buffer, select_token);
 
-            return std::make_unique<ast::SelectStatement>(select_token.location,
-                                                        std::move(text_expression),
-                                                        std::move(blocks),
-                                                        std::move(default_block));
+            return std::make_shared<ast::SelectStatement>(select_token.location,
+                                                          text_expression,
+                                                          blocks,
+                                                          default_block);
         }
 
 
@@ -699,9 +699,9 @@ namespace parse
 
             expect_token(buffer, structure_token.type);
 
-            return std::make_unique<ast::StructureDeclarationStatement>(structure_token.location,
+            return std::make_shared<ast::StructureDeclarationStatement>(structure_token.location,
                                                                         name,
-                                                                        std::move(members));
+                                                                        members);
         }
 
 
@@ -715,21 +715,15 @@ namespace parse
         ast::Statement parse_identifier_statement(token::Buffer& buffer,
                                                   token::Token& identifier_token)
         {
-            // static const StatementHandlerMap statement_parse_map =
-            //     {
-            //         { token::Type::SymbolAssign,      parse_assignment_statement },
-            //         { token::Type::SymbolOpenBracket, parse_sub_call_statement   }
-            //     };
-
             auto next = expect_one_of<token::Type::SymbolOpenBracket,
                                       token::Type::SymbolAssign>(buffer);
 
             auto parse_assignment_statement = [&]() -> ast::Statement
                 {
                     auto value = parse_expression(buffer);
-                    return std::make_unique<ast::AssignmentStatement>(next.location,
+                    return std::make_shared<ast::AssignmentStatement>(next.location,
                                                                       identifier_token,
-                                                                      std::move(value));
+                                                                      value);
                 };
 
             auto parse_sub_call_statement = [&]() -> ast::Statement
@@ -737,9 +731,9 @@ namespace parse
                     auto parameters = parse_parameter_expressions(buffer);
                     expect_close_bracket(buffer);
 
-                    return std::make_unique<ast::SubCallStatement>(identifier_token.location,
+                    return std::make_shared<ast::SubCallStatement>(identifier_token.location,
                                                                    identifier_token,
-                                                                   std::move(parameters));
+                                                                   parameters);
                 };
 
             if (next.type == token::Type::SymbolAssign)

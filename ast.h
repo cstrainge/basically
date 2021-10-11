@@ -54,11 +54,11 @@ namespace ast
     };
 
 
-    using Expression = std::unique_ptr<ExpressionBase>;
+    using Expression = std::shared_ptr<ExpressionBase>;
     using ExpressionList = std::list<Expression>;
 
 
-    using Statement = std::unique_ptr<StatementBase>;
+    using Statement = std::shared_ptr<StatementBase>;
     using StatementBlock = std::list<Statement>;
 
 
@@ -68,7 +68,7 @@ namespace ast
 
     class VariableDeclarationStatement;
 
-    using VariableDeclarationStatementPtr = std::unique_ptr<VariableDeclarationStatement>;
+    using VariableDeclarationStatementPtr = std::shared_ptr<VariableDeclarationStatement>;
     using VariableDeclarationList = std::list<VariableDeclarationStatementPtr>;
 
 
@@ -93,7 +93,7 @@ namespace ast
 
         public:
             VariableReadExpression(token::Token const& new_name,
-                                  Expression&& new_subscript);
+                                  Expression const& new_subscript);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -109,7 +109,7 @@ namespace ast
 
         public:
             PrefixExpression(token::Token const& new_operator_type,
-                             Expression&& new_expression);
+                             Expression const& new_expression);
 
         public:
             token::Token const& get_operator_type() const noexcept;
@@ -126,8 +126,8 @@ namespace ast
 
         public:
             BinaryExpression(token::Token const& new_operator_type,
-                             Expression&& new_lhs,
-                             Expression&& new_rhs);
+                             Expression const& new_lhs,
+                             Expression const& new_rhs);
 
         public:
             token::Token const& get_operator_type() const noexcept;
@@ -143,7 +143,7 @@ namespace ast
             token::Token operator_type;
 
         public:
-            PostfixExpression(Expression&& new_expression,
+            PostfixExpression(Expression const& new_expression,
                               token::Token const& new_operator_type);
 
         public:
@@ -160,7 +160,7 @@ namespace ast
 
         public:
             FunctionCallExpression(token::Token const& new_name,
-                                   ExpressionList&& new_parameters);
+                                   ExpressionList const& new_parameters);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -178,8 +178,8 @@ namespace ast
         public:
             DoStatement(source::Location const& new_location,
                         token::Token const& new_terminator,
-                        Expression&& new_test,
-                        StatementBlock&& new_body);
+                        Expression const& new_test,
+                        StatementBlock const& new_body);
 
         public:
             token::Token const& get_terminator() const noexcept;
@@ -200,10 +200,10 @@ namespace ast
         public:
             ForStatement(source::Location const& new_location,
                          token::Token const& new_index_name,
-                         Expression&& new_start_index,
-                         Expression&& new_end_index,
-                         Expression&& new_step_value,
-                         StatementBlock&& new_body);
+                         Expression const& new_start_index,
+                         Expression const& new_end_index,
+                         Expression const& new_step_value,
+                         StatementBlock const& new_body);
 
         public:
             token::Token const& get_index_name() const noexcept;
@@ -224,8 +224,8 @@ namespace ast
         public:
             SubDeclarationStatement(source::Location const& new_location,
                                     token::Token const& name,
-                                    VariableDeclarationList&& parameters,
-                                    StatementBlock&& body);
+                                    VariableDeclarationList const& parameters,
+                                    StatementBlock const& body);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -242,9 +242,9 @@ namespace ast
         public:
             FunctionDeclarationStatement(source::Location const& new_location,
                                          token::Token const& name,
-                                         VariableDeclarationList&& parameters,
+                                         VariableDeclarationList const& parameters,
                                          token::Token const& return_type,
-                                         StatementBlock&& body);
+                                         StatementBlock const& body);
 
         public:
             token::Token const& get_return_type() const noexcept;
@@ -260,9 +260,9 @@ namespace ast
 
         public:
             IfStatement(source::Location const& new_location,
-                        ConditionalBlock&& new_main_block,
-                        ConditionalBlockList&& new_else_if_blocks,
-                        StatementBlock&& new_else_block);
+                        ConditionalBlock const& new_main_block,
+                        ConditionalBlockList const& new_else_if_blocks,
+                        StatementBlock const& new_else_block);
 
         public:
             ConditionalBlock const& get_main_block() const noexcept;
@@ -292,7 +292,7 @@ namespace ast
 
         public:
             LoopStatement(source::Location const& new_location,
-                          StatementBlock&& new_body);
+                          StatementBlock const& new_body);
 
         public:
             StatementBlock const& get_body() const noexcept;
@@ -308,9 +308,9 @@ namespace ast
 
         public:
             SelectStatement(source::Location const& new_location,
-                            Expression&& new_test,
-                            ConditionalBlockList&& new_conditions,
-                            StatementBlock&& new_default_condition);
+                            Expression const& new_test,
+                            ConditionalBlockList const& new_conditions,
+                            StatementBlock const& new_default_condition);
 
         public:
             Expression const& get_test() const noexcept;
@@ -328,7 +328,7 @@ namespace ast
         public:
             StructureDeclarationStatement(source::Location const& new_location,
                                           token::Token const& new_name,
-                                          VariableDeclarationList&& new_members);
+                                          VariableDeclarationList const& new_members);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -347,7 +347,7 @@ namespace ast
             VariableDeclarationStatement(source::Location const& new_location,
                                          token::Token const& new_name,
                                          token::Token const& new_type_name,
-                                         Expression&& new_initilizer);
+                                         Expression const& new_initilizer);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -365,7 +365,7 @@ namespace ast
         public:
             AssignmentStatement(source::Location const& new_location,
                                 token::Token const& new_name,
-                                Expression&& new_value);
+                                Expression const& new_value);
 
         public:
             token::Token const& get_name() const noexcept;
@@ -382,7 +382,7 @@ namespace ast
         public:
             SubCallStatement(source::Location const& new_location,
                              token::Token const& new_name,
-                             ExpressionList&& new_parameters);
+                             ExpressionList const& new_parameters);
 
         public:
             token::Token const& get_name() const noexcept;

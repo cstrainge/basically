@@ -51,10 +51,10 @@ namespace ast
 
 
     VariableReadExpression::VariableReadExpression(token::Token const& new_name,
-                                                   Expression&& new_subscript)
+                                                   Expression const& new_subscript)
     : ExpressionBase(new_name.location),
       name(new_name),
-      subscript(std::move(new_subscript))
+      subscript(new_subscript)
     {
     }
 
@@ -74,10 +74,10 @@ namespace ast
 
 
     PrefixExpression::PrefixExpression(token::Token const& new_operator_type,
-                                       Expression&& new_expression)
+                                       Expression const& new_expression)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
-      expression(std::move(new_expression))
+      expression(new_expression)
     {
     }
 
@@ -97,12 +97,12 @@ namespace ast
 
 
     BinaryExpression::BinaryExpression(token::Token const& new_operator_type,
-                        Expression&& new_lhs,
-                        Expression&& new_rhs)
+                        Expression const& new_lhs,
+                        Expression const& new_rhs)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
-      lhs(std::move(new_lhs)),
-      rhs(std::move(new_rhs))
+      lhs(new_lhs),
+      rhs(new_rhs)
     {
     }
 
@@ -127,10 +127,10 @@ namespace ast
 
 
 
-    PostfixExpression::PostfixExpression(Expression&& new_expression,
+    PostfixExpression::PostfixExpression(Expression const& new_expression,
                                          token::Token const& new_operator_type)
     : ExpressionBase(new_operator_type.location),
-      expression(std::move(new_expression)),
+      expression(new_expression),
       operator_type(new_operator_type)
     {
     }
@@ -149,10 +149,10 @@ namespace ast
 
 
     FunctionCallExpression::FunctionCallExpression(token::Token const& new_name,
-                                                   ExpressionList&& new_parameters)
+                                                   ExpressionList const& new_parameters)
     : ExpressionBase(new_name.location),
       name(new_name),
-      parameters(std::move(new_parameters))
+      parameters(new_parameters)
     {
     }
 
@@ -172,12 +172,12 @@ namespace ast
 
     DoStatement::DoStatement(source::Location const& new_location,
                              token::Token const& new_terminator,
-                             Expression&& new_test,
-                             StatementBlock&& new_body)
+                             Expression const& new_test,
+                             StatementBlock const& new_body)
     : StatementBase(new_location),
       terminator(new_terminator),
-      test(std::move(new_test)),
-      body(std::move(new_body))
+      test(new_test),
+      body(new_body)
     {
     }
 
@@ -204,16 +204,16 @@ namespace ast
 
     ForStatement::ForStatement(source::Location const& new_location,
                     token::Token const& new_index_name,
-                    Expression&& new_start_index,
-                    Expression&& new_end_index,
-                    Expression&& new_step_value,
-                    StatementBlock&& new_body)
+                    Expression const& new_start_index,
+                    Expression const& new_end_index,
+                    Expression const& new_step_value,
+                    StatementBlock const& new_body)
     : StatementBase(new_location),
-      index_name(std::move(new_index_name)),
-      start_index(std::move(new_start_index)),
-      end_index(std::move(new_end_index)),
-      step_value(std::move(new_step_value)),
-      body(std::move(new_body))
+      index_name(new_index_name),
+      start_index(new_start_index),
+      end_index(new_end_index),
+      step_value(new_step_value),
+      body(new_body)
     {
     }
 
@@ -252,12 +252,12 @@ namespace ast
 
     SubDeclarationStatement::SubDeclarationStatement(source::Location const& new_location,
                                                      token::Token const& new_name,
-                                                     VariableDeclarationList&& new_parameters,
-                                                     StatementBlock&& new_body)
+                                                     VariableDeclarationList const& new_parameters,
+                                                     StatementBlock const& new_body)
     : StatementBase(new_location),
       name(new_name),
-      parameters(std::move(new_parameters)),
-      body(std::move(new_body))
+      parameters(new_parameters),
+      body(new_body)
     {
     }
 
@@ -283,15 +283,12 @@ namespace ast
 
 
     FunctionDeclarationStatement::FunctionDeclarationStatement(
-                                                           source::Location const& new_location,
-                                                           token::Token const& new_name,
-                                                           VariableDeclarationList&& new_parameters,
-                                                           token::Token const& new_return_type,
-                                                           StatementBlock&& new_body)
-    : SubDeclarationStatement(new_location,
-                              new_name,
-                              std::move(new_parameters),
-                              std::move(new_body)),
+                                                      source::Location const& new_location,
+                                                      token::Token const& new_name,
+                                                      VariableDeclarationList const& new_parameters,
+                                                      token::Token const& new_return_type,
+                                                      StatementBlock const& new_body)
+    : SubDeclarationStatement(new_location, new_name, new_parameters, new_body),
       return_type(new_return_type)
     {
     }
@@ -306,13 +303,13 @@ namespace ast
 
 
     IfStatement::IfStatement(source::Location const& new_location,
-                             ConditionalBlock&& new_main_block,
-                             ConditionalBlockList&& new_else_if_blocks,
-                             StatementBlock&& new_else_block)
+                             ConditionalBlock const& new_main_block,
+                             ConditionalBlockList const& new_else_if_blocks,
+                             StatementBlock const& new_else_block)
     : StatementBase(new_location),
-      main_block(std::move(new_main_block)),
-      else_if_blocks(std::move(new_else_if_blocks)),
-      else_block(std::move(new_else_block))
+      main_block(new_main_block),
+      else_if_blocks(new_else_if_blocks),
+      else_block(new_else_block)
     {
     }
 
@@ -354,9 +351,9 @@ namespace ast
 
 
     LoopStatement::LoopStatement(source::Location const& new_location,
-                                 StatementBlock&& new_body)
+                                 StatementBlock const& new_body)
     : StatementBase(new_location),
-      body(std::move(new_body))
+      body(new_body)
     {
     }
 
@@ -370,13 +367,13 @@ namespace ast
 
 
     SelectStatement::SelectStatement(source::Location const& new_location,
-                                    Expression&& new_test,
-                                    ConditionalBlockList&& new_conditions,
-                                    StatementBlock&& new_default_condition)
+                                    Expression const& new_test,
+                                    ConditionalBlockList const& new_conditions,
+                                    StatementBlock const& new_default_condition)
     : StatementBase(new_location),
-      test(std::move(new_test)),
-      conditions(std::move(new_conditions)),
-      default_condition(std::move(new_default_condition))
+      test(new_test),
+      conditions(new_conditions),
+      default_condition(new_default_condition)
     {
     }
 
@@ -401,12 +398,13 @@ namespace ast
 
 
 
-    StructureDeclarationStatement::StructureDeclarationStatement(source::Location const& new_location,
-                                                                 token::Token const& new_name,
-                                                                 VariableDeclarationList&& new_members)
+    StructureDeclarationStatement::StructureDeclarationStatement(
+                                                         source::Location const& new_location,
+                                                         token::Token const& new_name,
+                                                         VariableDeclarationList const& new_members)
     : StatementBase(new_location),
       name(new_name),
-      members(std::move(new_members))
+      members(new_members)
     {
     }
 
@@ -428,11 +426,11 @@ namespace ast
     VariableDeclarationStatement::VariableDeclarationStatement(source::Location const& new_location,
                                                                token::Token const& new_name,
                                                                token::Token const& new_type_name,
-                                                               Expression&& new_initilizer)
+                                                               Expression const& new_initilizer)
     : StatementBase(new_location),
       name(new_name),
       type_name(new_type_name),
-      initilizer(std::move(new_initilizer))
+      initilizer(new_initilizer)
     {
     }
 
@@ -459,10 +457,10 @@ namespace ast
 
     AssignmentStatement::AssignmentStatement(source::Location const& new_location,
                                              token::Token const& new_name,
-                                             Expression&& new_value)
+                                             Expression const& new_value)
     : StatementBase(new_location),
       name(new_name),
-      value(std::move(new_value))
+      value(new_value)
     {
     }
 
@@ -483,10 +481,10 @@ namespace ast
 
     SubCallStatement::SubCallStatement(source::Location const& new_location,
                                        token::Token const& new_name,
-                                       ExpressionList&& new_parameters)
+                                       ExpressionList const& new_parameters)
     : StatementBase(new_location),
       name(new_name),
-      parameters(std::move(new_parameters))
+      parameters(new_parameters)
     {
     }
 
