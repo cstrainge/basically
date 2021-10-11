@@ -6,7 +6,7 @@ namespace parse
 {
 
 
-    ast::StatementBlock parse_to_ast(token::Buffer& token_buffer);
+    ast::StatementList parse_to_ast(token::Buffer& token_buffer);
 
 
 }

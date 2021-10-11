@@ -1,7 +1,7 @@
 
 CXX = g++-10
 
-sources = source.cpp token.cpp ast.cpp parse.cpp basicly.cpp
+sources = source.cpp token.cpp ast.cpp parse.cpp type.cpp basicly.cpp
 objects = $(sources:.cpp=.o)
 headers = $(sources:.cpp=.h) std_inc.h
 
@@ -45,6 +45,9 @@ ast.o: ast.cpp $(pch)
 	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
 
 parse.o: parse.cpp $(pch)
+	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
+
+type.o: type.cpp $(pch)
 	$(CXX) $(cxx_flags) -c $(*).cpp -o $(*).o
 
 basicly.o: basicly.cpp $(pch)

@@ -51,7 +51,7 @@ namespace ast
 
 
     VariableReadExpression::VariableReadExpression(token::Token const& new_name,
-                                                   Expression const& new_subscript)
+                                                   ExpressionPtr const& new_subscript)
     : ExpressionBase(new_name.location),
       name(new_name),
       subscript(new_subscript)
@@ -65,7 +65,7 @@ namespace ast
     }
 
 
-    Expression const& VariableReadExpression::get_subscript() const noexcept
+    ExpressionPtr const& VariableReadExpression::get_subscript() const noexcept
     {
         return subscript;
     }
@@ -74,7 +74,7 @@ namespace ast
 
 
     PrefixExpression::PrefixExpression(token::Token const& new_operator_type,
-                                       Expression const& new_expression)
+                                       ExpressionPtr const& new_expression)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
       expression(new_expression)
@@ -88,7 +88,7 @@ namespace ast
     }
 
 
-    Expression const& PrefixExpression::get_expression() const noexcept
+    ExpressionPtr const& PrefixExpression::get_expression() const noexcept
     {
         return expression;
     }
@@ -97,8 +97,8 @@ namespace ast
 
 
     BinaryExpression::BinaryExpression(token::Token const& new_operator_type,
-                        Expression const& new_lhs,
-                        Expression const& new_rhs)
+                                       ExpressionPtr const& new_lhs,
+                                       ExpressionPtr const& new_rhs)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
       lhs(new_lhs),
@@ -113,13 +113,13 @@ namespace ast
     }
 
 
-    Expression const& BinaryExpression::get_lhs() const noexcept
+    ExpressionPtr const& BinaryExpression::get_lhs() const noexcept
     {
         return lhs;
     }
 
 
-    Expression const& BinaryExpression::get_rhs() const noexcept
+    ExpressionPtr const& BinaryExpression::get_rhs() const noexcept
     {
         return rhs;
     }
@@ -127,7 +127,7 @@ namespace ast
 
 
 
-    PostfixExpression::PostfixExpression(Expression const& new_expression,
+    PostfixExpression::PostfixExpression(ExpressionPtr const& new_expression,
                                          token::Token const& new_operator_type)
     : ExpressionBase(new_operator_type.location),
       expression(new_expression),
@@ -136,7 +136,7 @@ namespace ast
     }
 
 
-    Expression const& PostfixExpression::get_expression() const noexcept
+    ExpressionPtr const& PostfixExpression::get_expression() const noexcept
     {
         return expression;
     }
@@ -172,8 +172,8 @@ namespace ast
 
     DoStatement::DoStatement(source::Location const& new_location,
                              token::Token const& new_terminator,
-                             Expression const& new_test,
-                             StatementBlock const& new_body)
+                             ExpressionPtr const& new_test,
+                             StatementList const& new_body)
     : StatementBase(new_location),
       terminator(new_terminator),
       test(new_test),
@@ -188,13 +188,13 @@ namespace ast
     }
 
 
-    Expression const& DoStatement::get_test() const noexcept
+    ExpressionPtr const& DoStatement::get_test() const noexcept
     {
         return test;
     }
 
 
-    StatementBlock const& DoStatement::get_body() const noexcept
+    StatementList const& DoStatement::get_body() const noexcept
     {
         return body;
     }
@@ -203,11 +203,11 @@ namespace ast
 
 
     ForStatement::ForStatement(source::Location const& new_location,
-                    token::Token const& new_index_name,
-                    Expression const& new_start_index,
-                    Expression const& new_end_index,
-                    Expression const& new_step_value,
-                    StatementBlock const& new_body)
+                               token::Token const& new_index_name,
+                               ExpressionPtr const& new_start_index,
+                               ExpressionPtr const& new_end_index,
+                               ExpressionPtr const& new_step_value,
+                               StatementList const& new_body)
     : StatementBase(new_location),
       index_name(new_index_name),
       start_index(new_start_index),
@@ -224,25 +224,25 @@ namespace ast
     }
 
 
-    Expression const& ForStatement::get_start_index() const noexcept
+    ExpressionPtr const& ForStatement::get_start_index() const noexcept
     {
         return start_index;
     }
 
 
-    Expression const& ForStatement::get_end_index() const noexcept
+    ExpressionPtr const& ForStatement::get_end_index() const noexcept
     {
         return end_index;
     }
 
 
-    Expression const& ForStatement::get_step_value() const noexcept
+    ExpressionPtr const& ForStatement::get_step_value() const noexcept
     {
         return step_value;
     }
 
 
-    StatementBlock const& ForStatement::get_body() const noexcept
+    StatementList const& ForStatement::get_body() const noexcept
     {
         return body;
     }
@@ -253,7 +253,7 @@ namespace ast
     SubDeclarationStatement::SubDeclarationStatement(source::Location const& new_location,
                                                      token::Token const& new_name,
                                                      VariableDeclarationList const& new_parameters,
-                                                     StatementBlock const& new_body)
+                                                     StatementList const& new_body)
     : StatementBase(new_location),
       name(new_name),
       parameters(new_parameters),
@@ -274,7 +274,7 @@ namespace ast
     }
 
 
-    StatementBlock const& SubDeclarationStatement::get_body() const noexcept
+    StatementList const& SubDeclarationStatement::get_body() const noexcept
     {
         return body;
     }
@@ -287,7 +287,7 @@ namespace ast
                                                       token::Token const& new_name,
                                                       VariableDeclarationList const& new_parameters,
                                                       token::Token const& new_return_type,
-                                                      StatementBlock const& new_body)
+                                                      StatementList const& new_body)
     : SubDeclarationStatement(new_location, new_name, new_parameters, new_body),
       return_type(new_return_type)
     {
@@ -305,7 +305,7 @@ namespace ast
     IfStatement::IfStatement(source::Location const& new_location,
                              ConditionalBlock const& new_main_block,
                              ConditionalBlockList const& new_else_if_blocks,
-                             StatementBlock const& new_else_block)
+                             StatementList const& new_else_block)
     : StatementBase(new_location),
       main_block(new_main_block),
       else_if_blocks(new_else_if_blocks),
@@ -326,7 +326,7 @@ namespace ast
     }
 
 
-    StatementBlock const& IfStatement::get_else_block() const noexcept
+    StatementList const& IfStatement::get_else_block() const noexcept
     {
         return else_block;
     }
@@ -351,14 +351,14 @@ namespace ast
 
 
     LoopStatement::LoopStatement(source::Location const& new_location,
-                                 StatementBlock const& new_body)
+                                 StatementList const& new_body)
     : StatementBase(new_location),
       body(new_body)
     {
     }
 
 
-    StatementBlock const& LoopStatement::get_body() const noexcept
+    StatementList const& LoopStatement::get_body() const noexcept
     {
         return body;
     }
@@ -367,9 +367,9 @@ namespace ast
 
 
     SelectStatement::SelectStatement(source::Location const& new_location,
-                                    Expression const& new_test,
+                                    ExpressionPtr const& new_test,
                                     ConditionalBlockList const& new_conditions,
-                                    StatementBlock const& new_default_condition)
+                                    StatementList const& new_default_condition)
     : StatementBase(new_location),
       test(new_test),
       conditions(new_conditions),
@@ -378,7 +378,7 @@ namespace ast
     }
 
 
-    Expression const& SelectStatement::get_test() const noexcept
+    ExpressionPtr const& SelectStatement::get_test() const noexcept
     {
         return test;
     }
@@ -390,7 +390,7 @@ namespace ast
     }
 
 
-    StatementBlock const& SelectStatement::get_default_condition() const noexcept
+    StatementList const& SelectStatement::get_default_condition() const noexcept
     {
         return default_condition;
     }
@@ -426,11 +426,11 @@ namespace ast
     VariableDeclarationStatement::VariableDeclarationStatement(source::Location const& new_location,
                                                                token::Token const& new_name,
                                                                token::Token const& new_type_name,
-                                                               Expression const& new_initilizer)
+                                                               ExpressionPtr const& new_initializer)
     : StatementBase(new_location),
       name(new_name),
       type_name(new_type_name),
-      initilizer(new_initilizer)
+      initializer(new_initializer)
     {
     }
 
@@ -447,9 +447,9 @@ namespace ast
     }
 
 
-    Expression const& VariableDeclarationStatement::get_initilizer() const noexcept
+    ExpressionPtr const& VariableDeclarationStatement::get_initilizer() const noexcept
     {
-        return initilizer;
+        return initializer;
     }
 
 
@@ -457,7 +457,7 @@ namespace ast
 
     AssignmentStatement::AssignmentStatement(source::Location const& new_location,
                                              token::Token const& new_name,
-                                             Expression const& new_value)
+                                             ExpressionPtr const& new_value)
     : StatementBase(new_location),
       name(new_name),
       value(new_value)
@@ -471,7 +471,7 @@ namespace ast
     }
 
 
-    Expression const& AssignmentStatement::get_value() const noexcept
+    ExpressionPtr const& AssignmentStatement::get_value() const noexcept
     {
         return value;
     }

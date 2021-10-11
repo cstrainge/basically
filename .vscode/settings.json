@@ -7,5 +7,13 @@
         "**/basicly-r": true,
         "**/basicly.h.gch": true,
         "**/temp": true
-    }
+    },
+
+    "files.associations":
+    {
+        "*.h": "cpp"
+    },
+    "cSpell.words": [
+        "initilizer"
+    ]
 }

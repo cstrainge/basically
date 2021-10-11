@@ -27,12 +27,12 @@ namespace parse
         }
 
 
-        ast::Expression parse_expression(token::Buffer& buffer,
-                                         Precedence precedence = Precedence::None);
+        ast::ExpressionPtr parse_expression(token::Buffer& buffer,
+                                            Precedence precedence = Precedence::None);
 
         ast::ExpressionList parse_parameter_expressions(token::Buffer& buffer);
 
-        ast::Statement parse_statement(token::Buffer& buffer);
+        ast::StatementPtr parse_statement(token::Buffer& buffer);
 
 
         template <typename ItemType>
@@ -48,14 +48,14 @@ namespace parse
         }
 
 
-        using PrefixHandler = std::function<ast::Expression(token::Buffer&, token::Token const&)>;
+        using PrefixHandler = std::function<ast::ExpressionPtr(token::Buffer&, token::Token const&)>;
         using PrefixHandlerMap = std::unordered_map<token::Type, PrefixHandler>;
 
-        using InfixHandler = std::function<ast::Expression(token::Buffer&, ast::Expression&, token::Token const&)>;
+        using InfixHandler = std::function<ast::ExpressionPtr(token::Buffer&, ast::ExpressionPtr&, token::Token const&)>;
         using InfixHandlerMap = std::unordered_map<token::Type, Precedence>;
 
 
-        using StatementHandler = std::function<ast::Statement(token::Buffer&, token::Token&)>;
+        using StatementHandler = std::function<ast::StatementPtr(token::Buffer&, token::Token&)>;
         using StatementHandlerMap = std::unordered_map<token::Type, StatementHandler>;
 
 
@@ -243,13 +243,14 @@ namespace parse
         }
 
 
-        ast::Expression parse_literal_expression(token::Buffer& buffer, token::Token const& literal)
+        ast::ExpressionPtr parse_literal_expression(token::Buffer& buffer,
+                                                    token::Token const& literal)
         {
             return std::make_shared<ast::LiteralExpression>(literal);
         }
 
 
-        ast::Expression parse_call_expression(token::Buffer& buffer, token::Token const& name)
+        ast::ExpressionPtr parse_call_expression(token::Buffer& buffer, token::Token const& name)
         {
             expect_open_bracket(buffer);
             auto parameters = parse_parameter_expressions(buffer);
@@ -259,14 +260,14 @@ namespace parse
         }
 
 
-        ast::Expression parse_name_expression(token::Buffer& buffer, token::Token const& name)
+        ast::ExpressionPtr parse_name_expression(token::Buffer& buffer, token::Token const& name)
         {
             if (buffer.peek_next().type == token::Type::SymbolOpenBracket)
             {
                 return parse_call_expression(buffer, name);
             }
 
-            ast::Expression subscript;
+            ast::ExpressionPtr subscript;
 
             if (found_open_square_bracket(buffer))
             {
@@ -278,7 +279,7 @@ namespace parse
         }
 
 
-        ast::Expression parse_group_expression(token::Buffer& buffer, token::Token const& open)
+        ast::ExpressionPtr parse_group_expression(token::Buffer& buffer, token::Token const& open)
         {
             auto expression = parse_expression(buffer);
             expect_close_bracket(buffer);
@@ -287,10 +288,10 @@ namespace parse
         }
 
 
-        ast::Expression parse_binary_expression(token::Buffer& buffer,
-                                                Precedence precedence,
-                                                ast::Expression const& left,
-                                                token::Token const& operator_token)
+        ast::ExpressionPtr parse_binary_expression(token::Buffer& buffer,
+                                                   Precedence precedence,
+                                                   ast::ExpressionPtr const& left,
+                                                   token::Token const& operator_token)
         {
             return std::make_shared<ast::BinaryExpression>(operator_token,
                                                            left,
@@ -298,7 +299,7 @@ namespace parse
         }
 
 
-        ast::Expression parse_expression(token::Buffer& buffer, Precedence precedence)
+        ast::ExpressionPtr parse_expression(token::Buffer& buffer, Precedence precedence)
         {
             static const PrefixHandlerMap prefix_handlers =
                 {
@@ -376,8 +377,8 @@ namespace parse
         }
 
 
-        ast::StatementBlock parse_block_body_for(token::Buffer& buffer,
-                                                 token::Token const& start_token)
+        ast::StatementList parse_block_body_for(token::Buffer& buffer,
+                                                token::Token const& start_token)
         {
             auto not_at_end = [&]() -> bool
                 {
@@ -387,7 +388,7 @@ namespace parse
                            && (next.type != token::Type::Eof);
                 };
 
-            ast::StatementBlock body_statements;
+            ast::StatementList body_statements;
 
             while (not_at_end())
             {
@@ -459,7 +460,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_do_statement(token::Buffer& buffer, token::Token& do_token)
+        ast::StatementPtr parse_do_statement(token::Buffer& buffer, token::Token& do_token)
         {
             auto terminator = expect_one_of<token::Type::KeywordWhile,
                                             token::Type::KeywordUntil>(buffer);
@@ -474,7 +475,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_for_statement(token::Buffer& buffer, token::Token& for_token)
+        ast::StatementPtr parse_for_statement(token::Buffer& buffer, token::Token& for_token)
         {
             auto index_name = expect_identifier(buffer);
             expect_assign(buffer);
@@ -493,7 +494,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_sub_statement(token::Buffer& buffer, token::Token& sub_token)
+        ast::StatementPtr parse_sub_statement(token::Buffer& buffer, token::Token& sub_token)
         {
             auto name = expect_identifier(buffer);
             expect_open_bracket(buffer);
@@ -508,7 +509,8 @@ namespace parse
         }
 
 
-        ast::Statement parse_function_statement(token::Buffer& buffer, token::Token& function_token)
+        ast::StatementPtr parse_function_statement(token::Buffer& buffer,
+                                                   token::Token& function_token)
         {
             auto name = expect_identifier(buffer);
             expect_open_bracket(buffer);
@@ -526,7 +528,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_if_statement(token::Buffer& buffer, token::Token& if_token)
+        ast::StatementPtr parse_if_statement(token::Buffer& buffer, token::Token& if_token)
         {
             auto expect_then = [&]() { expect_token(buffer, token::Type::KeywordThen); };
 
@@ -557,9 +559,9 @@ namespace parse
                     return false;
                 };
 
-            auto parse_if_block_statements = [&]() -> ast::StatementBlock
+            auto parse_if_block_statements = [&]() -> ast::StatementList
                 {
-                    ast::StatementBlock statements;
+                    ast::StatementList statements;
 
                     while (!found_end_if_tokens())
                     {
@@ -590,7 +592,7 @@ namespace parse
                     return blocks;
                 };
 
-            auto parse_else_block = [&]() -> ast::StatementBlock
+            auto parse_else_block = [&]() -> ast::StatementList
                 {
                     if (found_else(buffer))
                     {
@@ -613,21 +615,21 @@ namespace parse
         }
 
 
-        ast::Statement parse_load_statement(token::Buffer& buffer, token::Token& load_token)
+        ast::StatementPtr parse_load_statement(token::Buffer& buffer, token::Token& load_token)
         {
             return std::make_shared<ast::LoadStatement>(load_token.location,
                                                         expect_identifier(buffer));
         }
 
 
-        ast::Statement parse_loop_statement(token::Buffer& buffer, token::Token& loop_token)
+        ast::StatementPtr parse_loop_statement(token::Buffer& buffer, token::Token& loop_token)
         {
             return std::make_shared<ast::LoopStatement>(loop_token.location,
                                                         parse_block_body_for(buffer, loop_token));
         }
 
 
-        ast::Statement parse_select_statement(token::Buffer& buffer, token::Token& select_token)
+        ast::StatementPtr parse_select_statement(token::Buffer& buffer, token::Token& select_token)
         {
             auto found_case_end_tokens = [](token::Buffer& buffer) -> bool
                 {
@@ -639,9 +641,9 @@ namespace parse
                           || (next.type == token::Type::KeywordCase);
                 };
 
-            auto parse_case_block_statements = [&](token::Buffer& buffer) -> ast::StatementBlock
+            auto parse_case_block_statements = [&](token::Buffer& buffer) -> ast::StatementList
                 {
-                    ast::StatementBlock statements;
+                    ast::StatementList statements;
 
                     while (!found_case_end_tokens(buffer))
                     {
@@ -666,7 +668,7 @@ namespace parse
                     return block_list;
                 };
 
-            auto parse_default_block = [&](token::Buffer& buffer) -> ast::StatementBlock
+            auto parse_default_block = [&](token::Buffer& buffer) -> ast::StatementList
                 {
                     if (found_else(buffer))
                     {
@@ -689,8 +691,8 @@ namespace parse
         }
 
 
-        ast::Statement parse_structure_statement(token::Buffer& buffer,
-                                                 token::Token& structure_token)
+        ast::StatementPtr parse_structure_statement(token::Buffer& buffer,
+                                                    token::Token& structure_token)
         {
             auto name = expect_identifier(buffer);
             auto members = parse_parameter_declarations(buffer,
@@ -705,20 +707,20 @@ namespace parse
         }
 
 
-        ast::Statement parse_variable_declaration_statement(token::Buffer& buffer,
-                                                            token::Token& var_token)
+        ast::StatementPtr parse_variable_declaration_statement(token::Buffer& buffer,
+                                                               token::Token& var_token)
         {
             return parse_variable_declaration(buffer, var_token);
         }
 
 
-        ast::Statement parse_identifier_statement(token::Buffer& buffer,
-                                                  token::Token& identifier_token)
+        ast::StatementPtr parse_identifier_statement(token::Buffer& buffer,
+                                                     token::Token& identifier_token)
         {
             auto next = expect_one_of<token::Type::SymbolOpenBracket,
                                       token::Type::SymbolAssign>(buffer);
 
-            auto parse_assignment_statement = [&]() -> ast::Statement
+            auto parse_assignment_statement = [&]() -> ast::StatementPtr
                 {
                     auto value = parse_expression(buffer);
                     return std::make_shared<ast::AssignmentStatement>(next.location,
@@ -726,7 +728,7 @@ namespace parse
                                                                       value);
                 };
 
-            auto parse_sub_call_statement = [&]() -> ast::Statement
+            auto parse_sub_call_statement = [&]() -> ast::StatementPtr
                 {
                     auto parameters = parse_parameter_expressions(buffer);
                     expect_close_bracket(buffer);
@@ -745,7 +747,7 @@ namespace parse
         }
 
 
-        ast::Statement parse_statement(token::Buffer& buffer)
+        ast::StatementPtr parse_statement(token::Buffer& buffer)
         {
             static const StatementHandlerMap statement_parse_map =
                 {
@@ -777,9 +779,9 @@ namespace parse
     }
 
 
-    ast::StatementBlock parse_to_ast(token::Buffer& buffer)
+    ast::StatementList parse_to_ast(token::Buffer& buffer)
     {
-        ast::StatementBlock toplevel;
+        ast::StatementList toplevel;
 
         while (buffer.peek_next().type != token::Type::Eof)
         {

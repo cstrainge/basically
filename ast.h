@@ -54,15 +54,15 @@ namespace ast
     };
 
 
-    using Expression = std::shared_ptr<ExpressionBase>;
-    using ExpressionList = std::list<Expression>;
+    using ExpressionPtr = std::shared_ptr<ExpressionBase>;
+    using ExpressionList = std::list<ExpressionPtr>;
 
 
-    using Statement = std::shared_ptr<StatementBase>;
-    using StatementBlock = std::list<Statement>;
+    using StatementPtr = std::shared_ptr<StatementBase>;
+    using StatementList = std::list<StatementPtr>;
 
 
-    using ConditionalBlock = std::tuple<Expression, StatementBlock>;
+    using ConditionalBlock = std::tuple<ExpressionPtr, StatementList>;
     using ConditionalBlockList = std::list<ConditionalBlock>;
 
 
@@ -89,15 +89,15 @@ namespace ast
     {
         private:
             token::Token name;
-            Expression subscript;
+            ExpressionPtr subscript;
 
         public:
             VariableReadExpression(token::Token const& new_name,
-                                  Expression const& new_subscript);
+                                   ExpressionPtr const& new_subscript);
 
         public:
             token::Token const& get_name() const noexcept;
-            Expression const& get_subscript() const noexcept;
+            ExpressionPtr const& get_subscript() const noexcept;
     };
 
 
@@ -105,15 +105,15 @@ namespace ast
     {
         private:
             token::Token operator_type;
-            Expression expression;
+            ExpressionPtr expression;
 
         public:
             PrefixExpression(token::Token const& new_operator_type,
-                             Expression const& new_expression);
+                             ExpressionPtr const& new_expression);
 
         public:
             token::Token const& get_operator_type() const noexcept;
-            Expression const& get_expression() const noexcept;
+            ExpressionPtr const& get_expression() const noexcept;
     };
 
 
@@ -121,33 +121,33 @@ namespace ast
     {
         private:
             token::Token operator_type;
-            Expression lhs;
-            Expression rhs;
+            ExpressionPtr lhs;
+            ExpressionPtr rhs;
 
         public:
             BinaryExpression(token::Token const& new_operator_type,
-                             Expression const& new_lhs,
-                             Expression const& new_rhs);
+                             ExpressionPtr const& new_lhs,
+                             ExpressionPtr const& new_rhs);
 
         public:
             token::Token const& get_operator_type() const noexcept;
-            Expression const& get_lhs() const noexcept;
-            Expression const& get_rhs() const noexcept;
+            ExpressionPtr const& get_lhs() const noexcept;
+            ExpressionPtr const& get_rhs() const noexcept;
     };
 
 
     class PostfixExpression : public ExpressionBase
     {
         private:
-            Expression expression;
+            ExpressionPtr expression;
             token::Token operator_type;
 
         public:
-            PostfixExpression(Expression const& new_expression,
+            PostfixExpression(ExpressionPtr const& new_expression,
                               token::Token const& new_operator_type);
 
         public:
-            Expression const& get_expression() const noexcept;
+            ExpressionPtr const& get_expression() const noexcept;
             token::Token const& get_operator_type() const noexcept;
     };
 
@@ -172,19 +172,19 @@ namespace ast
     {
         private:
             token::Token terminator;
-            Expression test;
-            StatementBlock body;
+            ExpressionPtr test;
+            StatementList body;
 
         public:
             DoStatement(source::Location const& new_location,
                         token::Token const& new_terminator,
-                        Expression const& new_test,
-                        StatementBlock const& new_body);
+                        ExpressionPtr const& new_test,
+                        StatementList const& new_body);
 
         public:
             token::Token const& get_terminator() const noexcept;
-            Expression const& get_test() const noexcept;
-            StatementBlock const& get_body() const noexcept;
+            ExpressionPtr const& get_test() const noexcept;
+            StatementList const& get_body() const noexcept;
     };
 
 
@@ -192,25 +192,25 @@ namespace ast
     {
         private:
             token::Token index_name;
-            Expression start_index;
-            Expression end_index;
-            Expression step_value;
-            StatementBlock body;
+            ExpressionPtr start_index;
+            ExpressionPtr end_index;
+            ExpressionPtr step_value;
+            StatementList body;
 
         public:
             ForStatement(source::Location const& new_location,
                          token::Token const& new_index_name,
-                         Expression const& new_start_index,
-                         Expression const& new_end_index,
-                         Expression const& new_step_value,
-                         StatementBlock const& new_body);
+                         ExpressionPtr const& new_start_index,
+                         ExpressionPtr const& new_end_index,
+                         ExpressionPtr const& new_step_value,
+                         StatementList const& new_body);
 
         public:
             token::Token const& get_index_name() const noexcept;
-            Expression const& get_start_index() const noexcept;
-            Expression const& get_end_index() const noexcept;
-            Expression const& get_step_value() const noexcept;
-            StatementBlock const& get_body() const noexcept;
+            ExpressionPtr const& get_start_index() const noexcept;
+            ExpressionPtr const& get_end_index() const noexcept;
+            ExpressionPtr const& get_step_value() const noexcept;
+            StatementList const& get_body() const noexcept;
     };
 
 
@@ -219,18 +219,18 @@ namespace ast
         private:
             token::Token name;
             VariableDeclarationList parameters;
-            StatementBlock body;
+            StatementList body;
 
         public:
             SubDeclarationStatement(source::Location const& new_location,
                                     token::Token const& name,
                                     VariableDeclarationList const& parameters,
-                                    StatementBlock const& body);
+                                    StatementList const& body);
 
         public:
             token::Token const& get_name() const noexcept;
             VariableDeclarationList const& get_parameters() const noexcept;
-            StatementBlock const& get_body() const noexcept;
+            StatementList const& get_body() const noexcept;
     };
 
 
@@ -244,7 +244,7 @@ namespace ast
                                          token::Token const& name,
                                          VariableDeclarationList const& parameters,
                                          token::Token const& return_type,
-                                         StatementBlock const& body);
+                                         StatementList const& body);
 
         public:
             token::Token const& get_return_type() const noexcept;
@@ -256,18 +256,18 @@ namespace ast
         private:
             ConditionalBlock main_block;
             ConditionalBlockList else_if_blocks;
-            StatementBlock else_block;
+            StatementList else_block;
 
         public:
             IfStatement(source::Location const& new_location,
                         ConditionalBlock const& new_main_block,
                         ConditionalBlockList const& new_else_if_blocks,
-                        StatementBlock const& new_else_block);
+                        StatementList const& new_else_block);
 
         public:
             ConditionalBlock const& get_main_block() const noexcept;
             ConditionalBlockList const& get_else_if_blocks() const noexcept;
-            StatementBlock const& get_else_block() const noexcept;
+            StatementList const& get_else_block() const noexcept;
     };
 
 
@@ -288,34 +288,34 @@ namespace ast
     class LoopStatement : public StatementBase
     {
         private:
-            StatementBlock body;
+            StatementList body;
 
         public:
             LoopStatement(source::Location const& new_location,
-                          StatementBlock const& new_body);
+                          StatementList const& new_body);
 
         public:
-            StatementBlock const& get_body() const noexcept;
+            StatementList const& get_body() const noexcept;
     };
 
 
     class SelectStatement : public StatementBase
     {
         private:
-            Expression test;
+            ExpressionPtr test;
             ConditionalBlockList conditions;
-            StatementBlock default_condition;
+            StatementList default_condition;
 
         public:
             SelectStatement(source::Location const& new_location,
-                            Expression const& new_test,
+                            ExpressionPtr const& new_test,
                             ConditionalBlockList const& new_conditions,
-                            StatementBlock const& new_default_condition);
+                            StatementList const& new_default_condition);
 
         public:
-            Expression const& get_test() const noexcept;
+            ExpressionPtr const& get_test() const noexcept;
             ConditionalBlockList const& get_conditions() const noexcept;
-            StatementBlock const& get_default_condition() const noexcept;
+            StatementList const& get_default_condition() const noexcept;
     };
 
 
@@ -341,18 +341,18 @@ namespace ast
         private:
             token::Token name;
             token::Token type_name;
-            Expression initilizer;
+            ExpressionPtr initializer;
 
         public:
             VariableDeclarationStatement(source::Location const& new_location,
                                          token::Token const& new_name,
                                          token::Token const& new_type_name,
-                                         Expression const& new_initilizer);
+                                         ExpressionPtr const& new_initializer);
 
         public:
             token::Token const& get_name() const noexcept;
             token::Token const& get_type_name() const noexcept;
-            Expression const& get_initilizer() const noexcept;
+            ExpressionPtr const& get_initilizer() const noexcept;
     };
 
 
@@ -360,16 +360,16 @@ namespace ast
     {
         private:
             token::Token name;
-            Expression value;
+            ExpressionPtr value;
 
         public:
             AssignmentStatement(source::Location const& new_location,
                                 token::Token const& new_name,
-                                Expression const& new_value);
+                                ExpressionPtr const& new_value);
 
         public:
             token::Token const& get_name() const noexcept;
-            Expression const& get_value() const noexcept;
+            ExpressionPtr const& get_value() const noexcept;
     };
 
 

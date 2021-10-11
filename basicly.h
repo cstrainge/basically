@@ -5,3 +5,4 @@
 #include "token.h"
 #include "ast.h"
 #include "parse.h"
+#include "type.h"
