@@ -14,6 +14,9 @@ namespace module
         public:
             Module(ast::StatementList const& block);
             ~Module();
+
+        public:
+            void init_base_types();
     };
 
 

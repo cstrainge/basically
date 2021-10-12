@@ -24,16 +24,53 @@ namespace type
         std::string name;
         TypeExtraInfo extra;
 
-        OptionalSize size() const;
+        TypeInfo(std::string const& name, TypeExtraInfo extra);
+
+        size_t size() const noexcept;
+    };
+
+
+    struct ExtraInfoHandler
+    {
+        std::function<void(NumberInfoPtr const&)> number;
+        std::function<void(StructureInfoPtr const&)> structure;
+
+        inline void operator ()(NumberInfoPtr const& value) const
+        {
+            number(value);
+        }
+
+        inline void operator ()(StructureInfoPtr const& value) const
+        {
+            structure(value);
+        }
+    };
+
+
+    enum class SignedFlag : bool
+    {
+        IsSigned = true,
+        IsUnsigned = false
+    };
+
+
+    enum class FloatingPointFlag : bool
+    {
+        IsFloatingPoint = true,
+        IsInteger = false
     };
 
 
     struct NumberInfo
     {
-        bool is_signed;
-        bool is_floating_point;
+        SignedFlag is_signed;
+        FloatingPointFlag is_floating_point;
 
         size_t size;
+
+        NumberInfo(SignedFlag new_is_signed,
+                   FloatingPointFlag new_is_floating_point,
+                   size_t new_size) noexcept;
     };
 
 

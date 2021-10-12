@@ -51,6 +51,7 @@ namespace token
     std::strong_ordering operator <=>(Type const& rhs, Token const& lhs) noexcept;
     std::strong_ordering operator <=>(Token const& rhs, Type const& lhs) noexcept;
 
+
     bool operator ==(Type const& rhs, Token const& lhs) noexcept;
     bool operator ==(Token const& rhs, Type const& lhs) noexcept;
 

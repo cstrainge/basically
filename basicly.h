@@ -15,8 +15,19 @@
 #include <stdexcept>
 #include <compare>
 #include <variant>
+#include <filesystem>
 
 #include <libgccjit.h>
+
+
+namespace std
+{
+
+
+    namespace fs = filesystem;
+
+
+}
 
 
 using OptionalChar = std::optional<char>;

@@ -1,4 +1,6 @@
 
+#include <unistd.h>
+
 #include "basicly.h"
 
 
@@ -11,45 +13,64 @@ namespace module
     }
 
 
-    void ModuleLoader::set_system_path(std::string const& path)
+    void ModuleLoader::set_system_path(std::fs::path const& path)
     {
+        system_path = path;
     }
 
 
-    void ModuleLoader::set_working_path(std::string const& path)
+    void ModuleLoader::push_working_path(std::fs::path const& path)
     {
+        auto status = std::fs::status(path);
+
+        if (!std::fs::exists(status))
+        {
+            throw std::runtime_error("Missing working directory, " + path.string() + ".");
+        }
+
+        if (!std::fs::is_directory(status))
+        {
+            throw std::runtime_error("Tried to set the working path to a non-directory," +
+                                     path.string() + ".");
+        }
+
+        if (!is_readable(path))
+        {
+            throw std::runtime_error("Can not read from working path, " + path.string() + ".");
+        }
+
+        working_path.push_front(path);
     }
 
 
-    void ModuleLoader::set_working_path_from_script(std::string const& script_path)
+    void ModuleLoader::push_working_path_from_script(std::fs::path const& script_path)
     {
+        std::fs::path new_path = script_path;
+        push_working_path(new_path.remove_filename());
     }
 
 
-    ModulePtr ModuleLoader::script_from_source(std::string const& source,
-                                               std::string const& name) const
+    void ModuleLoader::pop_working_path()
     {
-        return nullptr;
-    }
+        if (working_path.empty())
+        {
+            throw std::runtime_error("Internal error, working path stack misalignment.");
+        }
 
-
-    ModulePtr ModuleLoader::script_from_stream(std::istream& stream,
-                                               std::string const& name) const
-    {
-        return nullptr;
-    }
-
-
-    ModulePtr ModuleLoader::script_from_file(std::string const& file_path,
-                                             std::string const& name) const
-    {
-        return nullptr;
+        working_path.pop_front();
     }
 
 
     ModulePtr ModuleLoader::get_module(std::string const& name)
     {
         return nullptr;
+    }
+
+
+
+    bool ModuleLoader::is_readable(std::fs::path const& path) const noexcept
+    {
+        return access(path.c_str(), R_OK) != -1;
     }
 
 
