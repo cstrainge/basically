@@ -3,7 +3,7 @@ CXX = g++-10
 
 sources = source.cpp token.cpp ast.cpp parse.cpp type.cpp module.cpp module_loader.cpp basicly.cpp
 objects = $(sources:.cpp=.o)
-headers = $(sources:.cpp=.h) std_inc.h
+headers = $(sources:.cpp=.h)
 
 executable = basicly
 
