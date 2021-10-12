@@ -7,7 +7,7 @@ namespace token
 {
 
 
-        const std::unordered_map<Type, std::string> type_string_map =
+        static const std::unordered_map<Type, std::string> type_string_map =
         {
             { Type::None,               "nothing"                        },
             { Type::Eof,                "the end of the file"            },
@@ -57,7 +57,7 @@ namespace token
         };
 
 
-    const std::unordered_map<std::string, Type> keywords =
+    static const std::unordered_map<std::string, Type> keywords =
         {
             { "and",       Type::KeywordAnd       },
             { "as",        Type::KeywordAs        },
@@ -85,7 +85,7 @@ namespace token
         };
 
 
-    const std::unordered_map<char, Type> symbols =
+    static const std::unordered_map<char, Type> symbols =
         {
             { '(', Type::SymbolOpenBracket  },
             { ')', Type::SymbolCloseBracket },
@@ -104,7 +104,7 @@ namespace token
         };
 
 
-    const std::unordered_set<char> whitespace =
+    static const std::unordered_set<char> whitespace =
         {
             ' ', '\t', '\n'
         };
@@ -321,14 +321,14 @@ namespace token
     }
 
 
-    Token Buffer::extract_next_token()
+    Token Buffer::extract_next_token() noexcept
     {
-        // Is the lookahead buffer empty?  If not, don't bother trying to build a new token
-        // from the source text, just consume the first entry from the buffer.
+        // Is the lookahead buffer empty?  If not, don't bother trying to build a new token  the
+        // source text, just consume the first entry from the buffer.
         //
-        // Note though...  If we are in lookahead mode, then this function is called to
-        // build up the lookahead buffer.  So in that case, do not consume from the
-        // lookahead buffer, but from the source text.
+        // Note though...  If we are in lookahead mode, then this function is called to build up the
+        // lookahead buffer.  So in that case, do not consume from the lookahead buffer, but from
+        // the source text.
         if (   (!is_in_lookahead())
             && (!lookahead_buffer.empty()))
         {
@@ -338,8 +338,8 @@ namespace token
             return next;
         }
 
-        // Looks like we've exausted the lookahead buffer.  Try to extract a new token from
-        // the source text.
+        // Looks like we've exhausted the lookahead buffer.  Try to extract a new token from the
+        // source text.
         skip_whitespace();
 
         auto next = source_buffer.peek_next();
@@ -417,12 +417,6 @@ namespace token
     }
 
 
-    bool Buffer::is_string_char(OptionalChar const& next) const noexcept
-    {
-        return next && next.value() == '"';
-    }
-
-
     Token Buffer::read_number_token() noexcept
     {
         auto is_one_of = [](char the_char, std::unordered_set<char> const& options) -> bool
@@ -457,38 +451,6 @@ namespace token
                 .text = number_string,
                 .location = location,
             };
-    }
-
-
-    bool Buffer::is_number_start(OptionalChar const& next) const noexcept
-    {
-        if (!next)
-        {
-            return false;
-        }
-
-        auto the_char = next.value();
-
-        if (is_number_char(the_char))
-        {
-            return true;
-        }
-
-        auto later = source_buffer.peek_next(1);
-
-        if (   ((the_char == '+') || (the_char == '-'))
-            && (later && is_number_char(later.value())))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-
-    bool Buffer::is_number_char(char the_char) const noexcept
-    {
-        return is_between(the_char, '0', '9');
     }
 
 
@@ -531,39 +493,6 @@ namespace token
     }
 
 
-    Type Buffer::read_double_token(Type current, Type expected, Type new_type) noexcept
-    {
-        auto next = source_buffer.peek_next();
-
-        if (!next)
-        {
-            return current;
-        }
-
-        auto found_symbol = symbols.find(next.value());
-
-        if (found_symbol == symbols.end())
-        {
-            return current;
-        }
-
-        if (found_symbol->second != expected)
-        {
-            return current;
-        }
-
-        source_buffer.next();
-
-        return new_type;
-    }
-
-
-    bool Buffer::is_symbol_char(OptionalChar const& next) const noexcept
-    {
-        return is_char_in_collection(next, symbols);
-    }
-
-
     Token Buffer::read_identifier_token() noexcept
     {
         std::string identifier;
@@ -602,37 +531,30 @@ namespace token
     }
 
 
-    bool Buffer::is_identifier_start(OptionalChar const& next) const noexcept
+    Type Buffer::read_double_token(Type current, Type expected, Type new_type) noexcept
     {
+        auto next = source_buffer.peek_next();
+
         if (!next)
         {
-            return false;
+            return current;
         }
 
-        auto the_char = next.value();
+        auto found_symbol = symbols.find(next.value());
 
-        return    is_between(the_char, 'a', 'z')
-                || is_between(the_char, 'A', 'Z')
-                || the_char == '_';
-    }
+        if (found_symbol == symbols.end())
+        {
+            return current;
+        }
 
+        if (found_symbol->second != expected)
+        {
+            return current;
+        }
 
-    bool Buffer::is_between(char next, char start, char end) const noexcept
-    {
-        return (next >= start) && (next <= end);
-    }
+        source_buffer.next();
 
-
-    bool Buffer::is_delimiter(OptionalChar const& next) const noexcept
-    {
-        return    is_whitespace(next)
-                || is_comment(next)
-                || is_symbol(next);
-    }
-
-    bool Buffer::is_symbol(OptionalChar const& next) const noexcept
-    {
-        return is_char_in_collection(next, symbols);
+        return new_type;
     }
 
 
@@ -653,16 +575,10 @@ namespace token
     }
 
 
-    bool Buffer::is_comment(OptionalChar const& next) const noexcept
-    {
-        return next.has_value() && next.value() == '#';
-    }
-
-
     void Buffer::skip_whitespace() noexcept
     {
         while (   is_whitespace(source_buffer.peek_next())
-                || is_comment(source_buffer.peek_next()))
+               || is_comment(source_buffer.peek_next()))
         {
             auto next = source_buffer.next();
             if (is_comment(next))
@@ -670,6 +586,91 @@ namespace token
                 skip_comment();
             }
         }
+    }
+
+
+    bool Buffer::is_string_char(OptionalChar const& next) const noexcept
+    {
+        return next && next.value() == '"';
+    }
+
+
+    bool Buffer::is_number_start(OptionalChar const& next) const noexcept
+    {
+        if (!next)
+        {
+            return false;
+        }
+
+        auto the_char = next.value();
+
+        if (is_number_char(the_char))
+        {
+            return true;
+        }
+
+        auto later = source_buffer.peek_next(1);
+
+        if (   ((the_char == '+') || (the_char == '-'))
+            && (later && is_number_char(later.value())))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    bool Buffer::is_number_char(char the_char) const noexcept
+    {
+        return is_between(the_char, '0', '9');
+    }
+
+
+    bool Buffer::is_symbol_char(OptionalChar const& next) const noexcept
+    {
+        return is_char_in_collection(next, symbols);
+    }
+
+
+    bool Buffer::is_identifier_start(OptionalChar const& next) const noexcept
+    {
+        if (!next)
+        {
+            return false;
+        }
+
+        auto the_char = next.value();
+
+        return    is_between(the_char, 'a', 'z')
+               || is_between(the_char, 'A', 'Z')
+               || the_char == '_';
+    }
+
+
+    bool Buffer::is_between(char next, char start, char end) const noexcept
+    {
+        return (next >= start) && (next <= end);
+    }
+
+
+    bool Buffer::is_delimiter(OptionalChar const& next) const noexcept
+    {
+        return    is_whitespace(next)
+               || is_comment(next)
+               || is_symbol(next);
+    }
+
+
+    bool Buffer::is_symbol(OptionalChar const& next) const noexcept
+    {
+        return is_char_in_collection(next, symbols);
+    }
+
+
+    bool Buffer::is_comment(OptionalChar const& next) const noexcept
+    {
+        return next.has_value() && next.value() == '#';
     }
 
 

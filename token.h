@@ -83,37 +83,34 @@ namespace token
 
         private:
             bool is_in_lookahead() const noexcept;
+            Token extract_next_token() noexcept;
 
         private:
-            Token extract_next_token();
             Token read_string_token() noexcept;
-            bool is_string_char(OptionalChar const& next) const noexcept;
             Token read_number_token() noexcept;
+            Token read_symbol_token() noexcept;
+            Token read_identifier_token() noexcept;
+            Type read_double_token(Type current, Type expected, Type new_type) noexcept;
+
+            void skip_comment() noexcept;
+            void skip_whitespace() noexcept;
+
+            bool is_string_char(OptionalChar const& next) const noexcept;
             bool is_number_start(OptionalChar const& next) const noexcept;
             bool is_number_char(char the_char) const noexcept;
-            Token read_symbol_token() noexcept;
-            Type read_double_token(Type current, Type expected, Type new_type) noexcept;
             bool is_symbol_char(OptionalChar const& next) const noexcept;
-            Token read_identifier_token() noexcept;
             bool is_identifier_start(OptionalChar const& next) const noexcept;
             bool is_between(char next, char start, char end) const noexcept;
             bool is_delimiter(OptionalChar const& next) const noexcept;
             bool is_symbol(OptionalChar const& next) const noexcept;
-            void skip_comment() noexcept;
             bool is_comment(OptionalChar const& next) const noexcept;
-            void skip_whitespace() noexcept;
             bool is_whitespace(OptionalChar const& next) const noexcept;
+
             template <typename CollectionType>
             bool is_char_in_collection(OptionalChar const& next,
                                        CollectionType const& collection) const noexcept;
     };
 
-
-
-    extern const std::unordered_map<Type, std::string> type_string_map;
-    extern const std::unordered_map<std::string, Type> keywords;
-    extern const std::unordered_map<char, Type> symbols;
-    extern const std::unordered_set<char> whitespace;
 
 
 }
