@@ -41,6 +41,6 @@ using CompoundName = std::vector<std::string>;
 #include "token.h"
 #include "ast.h"
 #include "parse.h"
-#include "type.h"
+#include "typing.h"
 #include "module.h"
 #include "module_loader.h"

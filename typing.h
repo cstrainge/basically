@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace type
+namespace typing
 {
 
 
@@ -19,10 +19,40 @@ namespace type
     using TypeInfoMap = std::unordered_map<std::string, TypeInfoPtr>;
 
 
+    enum class Visibility
+    {
+        Public,
+        Protected,
+        Private,
+        Default
+    };
+
+
+    template <Visibility default_value>
+    constexpr Visibility reslovle(Visibility value) noexcept
+    {
+        if (value == Visibility::Default)
+        {
+            return default_value;
+        }
+
+        return value;
+    }
+
+
+    template <Visibility default_value>
+    constexpr bool check_visibility(Visibility value, Visibility desired) noexcept
+    {
+        std::static_assert(desired != Visibility::Default);
+        return resolve<default_value>(value) == desired;
+    }
+
+
     struct TypeInfo
     {
         std::string name;
         TypeExtraInfo extra;
+        Visibility visibility = Visibility::Default;
 
         TypeInfo(std::string const& name, TypeExtraInfo extra);
 
@@ -91,19 +121,11 @@ namespace type
     };
 
 
-    enum class Visibility
-    {
-        Public,
-        Protected,
-        Private
-    };
-
-
     struct VariableInfo
     {
         std::string name;
         TypeInfoPtr type;
-        Visibility visibility;
+        Visibility visibility = Visibility::Default;
 
         ast::ExpressionPtr initializer;
 
@@ -124,7 +146,7 @@ namespace type
     {
         std::string name;
         VariableInfoList parameters;
-        Visibility visibility;
+        Visibility visibility = Visibility::Default;
         ast::StatementList body;
     };
 
@@ -141,45 +163,6 @@ namespace type
 
     using FunctionInfoPtr = std::shared_ptr<FunctionInfo>;
     using FunctionInfoMap = std::unordered_map<std::string, FunctionInfoPtr>;
-
-
-    class Namespace;
-    using NamespacePtr = std::shared_ptr<Namespace>;
-    using NamespaceMap = std::unordered_map<std::string, NamespacePtr>;
-
-
-    class Namespace
-    {
-        private:
-            NamespacePtr parent;
-            NamespaceMap children;
-
-            TypeInfoMap types;
-            VariableInfoMap variables;
-            SubInfoMap subs;
-            FunctionInfoMap functions;
-
-        public:
-            Namespace() = default;
-            ~Namespace() = default;
-
-        public:
-            void insert(TypeInfoPtr const& item);
-            void insert(VariableInfoPtr const& item);
-            void insert(SubInfoPtr const& item);
-            void insert(FunctionInfoPtr const& item);
-
-        public:
-            TypeInfoPtr find_type(std::string const& name) const noexcept;
-            VariableInfoPtr find_variable(std::string const& name) const noexcept;
-            SubInfoPtr find_sub(std::string const& name) const noexcept;
-            FunctionInfoPtr find_function(std::string const& name) const noexcept;
-
-        private:
-            template <typename ItemType>
-            ItemType find_item(std::unordered_map<std::string, ItemType> const& map,
-                                std::string const& name) const noexcept;
-    };
 
 
 }
