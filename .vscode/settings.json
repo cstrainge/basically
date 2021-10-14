@@ -3,9 +3,9 @@
     "files.exclude":
     {
         "**/.git": true,
-        "**/basicly": true,
-        "**/basicly-r": true,
-        "**/basicly.h.gch": true,
+        "**/basically": true,
+        "**/basically-r": true,
+        "**/basically.h.gch": true,
         "**/temp": true
     },
 

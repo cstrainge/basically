@@ -8,14 +8,14 @@
     "configurations":
     [
         {
-            "name": "Basicly Debug",
+            "name": "basically Debug",
             "type": "cppdbg",
             "MIMode": "gdb",
 
             "request": "launch",
             "stopAtEntry": true,
 
-            "program": "${workspaceFolder}/basicly",
+            "program": "${workspaceFolder}/basically",
             "cwd": "${workspaceFolder}",
             "args": [ "test.bas" ],
             "environment": [],

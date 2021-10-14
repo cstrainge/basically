@@ -1,13 +1,13 @@
 
 CXX = g++-10
 
-sources = source.cpp token.cpp ast.cpp parse.cpp typing.cpp module.cpp module_loader.cpp basicly.cpp
+sources = source.cpp token.cpp ast.cpp parse.cpp typing.cpp module.cpp module_loader.cpp basically.cpp
 objects = $(sources:.cpp=.o)
 headers = $(sources:.cpp=.h)
 
-executable = basicly
+executable = basically
 
-pch_src = basicly.h
+pch_src = basically.h
 pch = $(pch_src).gch
 
 libs = -lgccjit
@@ -53,5 +53,5 @@ module.o: module.cpp $(pch)
 module_loader.o: module_loader.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
-basicly.o: basicly.cpp $(pch)
+basically.o: basically.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o

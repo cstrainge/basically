@@ -1,7 +1,7 @@
 
 #include <unistd.h>
 
-#include "basicly.h"
+#include "basically.h"
 
 
 namespace module
