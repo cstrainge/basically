@@ -6,7 +6,9 @@ namespace basically::typing
 {
 
 
-    TypeInfo::TypeInfo(std::string const& new_name, TypeExtraInfo new_extra)
+    TypeInfo::TypeInfo(std::string const& new_name,
+                       TypeExtraInfo new_extra,
+                       Visibility visibility)
     : name(new_name),
       extra(new_extra)
     {
@@ -50,25 +52,6 @@ namespace basically::typing
         std::visit(handler, extra);
 
         return new_size;
-    }
-
-
-    bool VariableInfo::is_array() const noexcept
-    {
-        return array_count != 0;
-    }
-
-
-    size_t VariableInfo::size() const noexcept
-    {
-        auto computed_size = type->size();
-
-        if (is_array())
-        {
-            return array_count * computed_size;
-        }
-
-        return computed_size;
     }
 
 

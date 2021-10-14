@@ -248,10 +248,7 @@ namespace basically::token
 
     void Buffer::commit_lookahead()
     {
-        if (!is_in_lookahead())
-        {
-            return;
-        }
+        assert(is_in_lookahead());
 
         if (marker_stack.size() > 1)
         {
@@ -270,11 +267,7 @@ namespace basically::token
 
     void Buffer::cancel_lookahead()
     {
-        if (!is_in_lookahead())
-        {
-            return;
-        }
-
+        assert(is_in_lookahead());
         marker_stack.pop_front();
     }
 

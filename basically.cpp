@@ -8,67 +8,21 @@
 #include "basically.h"
 
 
-namespace
-{
-
-
-    void dump_tokens(std::string const& code)
-    {
-        std::cout << "Original source:" << std::endl
-                  << code << std::endl
-                  << "Found tokens:" << std::endl;
-
-        basically::source::Buffer source_buffer(code);
-        basically::token::Buffer token_buffer(source_buffer);
-
-        basically::token::Token next;
-
-        do
-        {
-            next = token_buffer.next();
-            std::cout << "    " << next << std::endl;
-        }
-        while (next.type != basically::token::Type::Eof);
-    }
-
-
-    void compile_source_file(std::string const& code)
-    {
-        basically::source::Buffer source_buffer(code);
-        basically::token::Buffer token_buffer(source_buffer);
-
-        auto ast = basically::parse::parse_to_ast(token_buffer);
-    }
-
-
-}
-
-
-const std::string code = R"code(
-# This is a starting point!
-
-var int_val as i32 = 1024
-var str_val as string = "Hello world."
-
-function foo(x as i32) as i32
-    foo = 1024 - x
-end function
-
-var x as i32 = foo(48)
-)code";
-
-
 int main(int argc, char* argv[])
 {
     auto result = EXIT_SUCCESS;
 
     try
     {
-        dump_tokens(code);
-        std::cout << std::endl;
+        if (argc != 2)
+        {
+            throw std::runtime_error("Need to specifiy a script to run.");
+        }
 
-        compile_source_file(code);
-        std::cout << "Compile finished." << std::endl;
+        basically::modules::Loader loader;
+        auto script = loader.get_script(argv[1]);
+
+        result = script->execute();
     }
     catch (std::exception& e)
     {

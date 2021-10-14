@@ -43,5 +43,5 @@ using CompoundName = std::vector<std::string>;
 #include "ast.h"
 #include "parse.h"
 #include "typing.h"
-#include "module.h"
-#include "module_loader.h"
+#include "variables.h"
+#include "modules.h"

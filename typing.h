@@ -24,6 +24,7 @@ namespace basically::typing
         Public,
         Protected,
         Private,
+
         Default
     };
 
@@ -52,9 +53,11 @@ namespace basically::typing
     {
         std::string name;
         TypeExtraInfo extra;
-        Visibility visibility = Visibility::Default;
+        Visibility visibility;
 
-        TypeInfo(std::string const& name, TypeExtraInfo extra);
+        TypeInfo(std::string const& name,
+                 TypeExtraInfo extra,
+                 Visibility visibility = Visibility::Default);
 
         size_t size() const noexcept;
     };
@@ -104,8 +107,9 @@ namespace basically::typing
     };
 
 
-    struct FieldInfo : public TypeInfo
+    struct FieldInfo
     {
+        std::string name;
         TypeInfoPtr type;
         size_t offset;
         ast::ExpressionPtr initializer;
@@ -121,31 +125,21 @@ namespace basically::typing
     };
 
 
-    struct VariableInfo
+    struct ParameterInfo
     {
         std::string name;
         TypeInfoPtr type;
-        Visibility visibility = Visibility::Default;
-
         ast::ExpressionPtr initializer;
-
-        size_t array_count;
-        bool is_const;
-
-        bool is_array() const noexcept;
-        size_t size() const noexcept;
     };
 
 
-    using VariableInfoPtr = std::shared_ptr<VariableInfo>;
-    using VariableInfoMap = std::unordered_map<std::string, VariableInfoPtr>;
-    using VariableInfoList = std::vector<VariableInfoPtr>;
+    using ParameterList = std::vector<ParameterInfo>;
 
 
     struct SubInfo
     {
         std::string name;
-        VariableInfoList parameters;
+        ParameterList parameters;
         Visibility visibility = Visibility::Default;
         ast::StatementList body;
     };
@@ -157,7 +151,7 @@ namespace basically::typing
 
     struct FunctionInfo : public SubInfo
     {
-        VariableInfoPtr return_type;
+        TypeInfoPtr return_type;
     };
 
 
