@@ -3,7 +3,7 @@
 
 
 
-namespace token
+namespace basically::token
 {
 
 

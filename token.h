@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace token
+namespace basically::token
 {
 
 

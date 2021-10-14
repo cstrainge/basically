@@ -16,6 +16,7 @@
 #include <compare>
 #include <variant>
 #include <filesystem>
+#include <cassert>
 
 #include <libgccjit.h>
 

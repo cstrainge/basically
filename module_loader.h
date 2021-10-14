@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace module
+namespace basically::module
 {
 
 

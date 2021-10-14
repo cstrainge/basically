@@ -2,7 +2,7 @@
 #include "basically.h"
 
 
-namespace module
+namespace basically::module
 {
 
 

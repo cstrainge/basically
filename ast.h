@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace ast
+namespace basically::ast
 {
 
 

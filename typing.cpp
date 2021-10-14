@@ -2,7 +2,7 @@
 #include "basically.h"
 
 
-namespace typing
+namespace basically::typing
 {
 
 

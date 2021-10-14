@@ -18,26 +18,26 @@ namespace
                   << code << std::endl
                   << "Found tokens:" << std::endl;
 
-        source::Buffer source_buffer(code);
-        token::Buffer token_buffer(source_buffer);
+        basically::source::Buffer source_buffer(code);
+        basically::token::Buffer token_buffer(source_buffer);
 
-        token::Token next;
+        basically::token::Token next;
 
         do
         {
             next = token_buffer.next();
             std::cout << "    " << next << std::endl;
         }
-        while (next.type != token::Type::Eof);
+        while (next.type != basically::token::Type::Eof);
     }
 
 
     void compile_source_file(std::string const& code)
     {
-        source::Buffer source_buffer(code);
-        token::Buffer token_buffer(source_buffer);
+        basically::source::Buffer source_buffer(code);
+        basically::token::Buffer token_buffer(source_buffer);
 
-        auto ast = parse::parse_to_ast(token_buffer);
+        auto ast = basically::parse::parse_to_ast(token_buffer);
     }
 
 

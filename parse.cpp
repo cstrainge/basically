@@ -2,7 +2,7 @@
 #include "basically.h"
 
 
-namespace parse
+namespace basically::parse
 {
 
 

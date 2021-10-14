@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace typing
+namespace basically::typing
 {
 
 
@@ -43,7 +43,7 @@ namespace typing
     template <Visibility default_value>
     constexpr bool check_visibility(Visibility value, Visibility desired) noexcept
     {
-        std::static_assert(desired != Visibility::Default);
+        assert(desired != Visibility::Default);
         return resolve<default_value>(value) == desired;
     }
 

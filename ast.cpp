@@ -2,7 +2,7 @@
 #include "basically.h"
 
 
-namespace ast
+namespace basically::ast
 {
 
 
