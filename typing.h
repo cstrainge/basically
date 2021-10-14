@@ -29,7 +29,7 @@ namespace basically::typing
 
 
     template <Visibility default_value>
-    constexpr Visibility reslovle(Visibility value) noexcept
+    constexpr Visibility resovle(Visibility value) noexcept
     {
         if (value == Visibility::Default)
         {
@@ -44,7 +44,7 @@ namespace basically::typing
     constexpr bool check_visibility(Visibility value, Visibility desired) noexcept
     {
         assert(desired != Visibility::Default);
-        return resolve<default_value>(value) == desired;
+        return resovle<default_value>(value) == desired;
     }
 
 
