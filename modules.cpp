@@ -86,11 +86,13 @@ namespace basically::modules
 
     Loader::Loader()
     {
+        loaded_modules.insert({ "builtins", get_builtins_module() });
     }
 
 
     void Loader::set_system_path(std::fs::path const& path)
     {
+        std::cout << "Set system path " << path << "." << std::endl;
         system_path = path;
     }
 
@@ -119,13 +121,6 @@ namespace basically::modules
     }
 
 
-//    void Loader::push_working_path_from_script(std::fs::path const& script_path)
-//    {
-//        std::fs::path new_path = script_path;
-//        push_working_path(new_path.remove_filename());
-//    }
-
-
     void Loader::pop_working_path()
     {
         assert(!working_path.empty());
@@ -135,15 +130,124 @@ namespace basically::modules
 
     ModulePtr Loader::get_script(std::fs::path const& script_path)
     {
-        return nullptr;
+        assert(script_path.has_filename());
+
+        auto path_components = [&]() -> std::pair<std::fs::path, std::fs::path>
+            {
+                auto base_path = script_path;
+
+                if (base_path.is_relative())
+                {
+                    base_path = std::fs::absolute(base_path);
+                }
+
+                base_path = base_path.lexically_normal();
+                base_path.remove_filename();
+
+                return { base_path, script_path.filename() };
+            };
+
+        auto [ base_path, file_name ] = path_components();
+        PathManager path_push(this, base_path);
+
+        return get_module(file_name);
     }
 
 
-    ModulePtr Loader::get_module(std::string const& name)
+    ModulePtr Loader::get_module(std::fs::path const& name)
     {
+        assert(!name.empty());
+        assert(!system_path.empty());
+        assert(!working_path.empty());
+
+        if (auto found_module = find_loaded_module(name); found_module)
+        {
+            std::cout << "Returning cached module: " << name << "." << std::endl;
+            return found_module;
+        }
+
+        auto found_path = find_module_path(name);
+
+        if (!found_path)
+        {
+            return nullptr;
+        }
+
+        auto module_path = found_path.value();
+        auto source_buffer = source::Buffer(module_path);
+        auto token_buffer = token::Buffer(source_buffer);
+
+        std::cout << "Loading module " << name
+                  << " from " << module_path << "."
+                  << std::endl;
+
+
+        auto ast = parse::parse_to_ast(token_buffer);
+        auto new_module = std::make_shared<Module>(ast);
+
+        loaded_modules.insert({ without_extension(name), new_module });
+
+        return new_module;
+    }
+
+
+    ModulePtr Loader::find_loaded_module(std::fs::path const& name)
+    {
+        if (auto found = loaded_modules.find(without_extension(name));
+            found != loaded_modules.end())
+        {
+            return found->second;
+        }
+
         return nullptr;
     }
 
+
+    OptionalPath Loader::find_module_path(std::fs::path const& name) const
+    {
+        assert(!working_path.empty());
+
+        auto& base_path = working_path.front();
+        auto module_path = base_path / with_extension(name);
+
+        if (std::fs::exists(module_path))
+        {
+            return module_path.lexically_normal();
+        }
+
+        module_path = base_path / without_extension(name);
+
+        if (!std::fs::exists(module_path))
+        {
+            throw std::runtime_error("Could not find module \"" +
+                                     without_extension(name).string() +
+                                     "\".");
+        }
+
+        return module_path.lexically_normal();
+    }
+
+
+    std::fs::path Loader::with_extension(std::fs::path name) const
+    {
+        if (!name.has_extension())
+        {
+            name.replace_extension(".bas");
+        }
+
+        return name;
+    }
+
+
+    std::fs::path Loader::without_extension(std::fs::path name) const
+    {
+        if (name.has_extension())
+        {
+            name.replace_extension("");
+        }
+
+        return name;
+    }
 
 
     bool Loader::is_readable(std::fs::path const& path) const noexcept

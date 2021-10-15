@@ -10,7 +10,7 @@ namespace basically::variables
     {
         std::string name;
         typing::TypeInfoPtr type;
-        ast::ExpressionPtr initializer;
+        ast::Expression initializer;
         typing::Visibility visibility;
         size_t array_count;
         bool is_const;

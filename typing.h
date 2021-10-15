@@ -112,7 +112,7 @@ namespace basically::typing
         std::string name;
         TypeInfoPtr type;
         size_t offset;
-        ast::ExpressionPtr initializer;
+        ast::Expression initializer;
     };
 
 
@@ -129,7 +129,7 @@ namespace basically::typing
     {
         std::string name;
         TypeInfoPtr type;
-        ast::ExpressionPtr initializer;
+        ast::Expression initializer;
     };
 
 

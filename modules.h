@@ -50,6 +50,25 @@ namespace basically::modules
 
     class Loader
     {
+        public:
+            struct PathManager
+            {
+                Loader& loader;
+
+                PathManager(Loader* new_loader, std::fs::path& new_path)
+                : loader(*new_loader)
+                {
+                    assert(new_loader != nullptr);
+                    loader.push_working_path(new_path);
+                }
+
+                ~PathManager()
+                {
+                    assert(!loader.working_path.empty());
+                    loader.pop_working_path();
+                }
+            };
+
         private:
             std::fs::path system_path;
             std::list<std::fs::path> working_path;
@@ -68,9 +87,15 @@ namespace basically::modules
 
         public:
             ModulePtr get_script(std::fs::path const& script_path);
-            ModulePtr get_module(std::string const& name);
+            ModulePtr get_module(std::fs::path const& name);
 
         private:
+            ModulePtr find_loaded_module(std::fs::path const& name);
+            OptionalPath find_module_path(std::fs::path const& name) const;
+
+            std::fs::path with_extension(std::fs::path name) const;
+            std::fs::path without_extension(std::fs::path name) const;
+
             bool is_readable(std::fs::path const& path) const noexcept;
     };
 

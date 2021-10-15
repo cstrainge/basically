@@ -1,6 +1,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <iterator>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -34,6 +35,7 @@ namespace std
 using OptionalChar = std::optional<char>;
 using OptionalString = std::optional<std::string>;
 using OptionalSize = std::optional<size_t>;
+using OptionalPath = std::optional<std::fs::path>;
 
 using CompoundName = std::vector<std::string>;
 

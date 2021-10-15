@@ -51,7 +51,7 @@ namespace basically::ast
 
 
     VariableReadExpression::VariableReadExpression(token::Token const& new_name,
-                                                   ExpressionPtr const& new_subscript)
+                                                   Expression const& new_subscript)
     : ExpressionBase(new_name.location),
       name(new_name),
       subscript(new_subscript)
@@ -65,7 +65,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& VariableReadExpression::get_subscript() const noexcept
+    Expression const& VariableReadExpression::get_subscript() const noexcept
     {
         return subscript;
     }
@@ -74,7 +74,7 @@ namespace basically::ast
 
 
     PrefixExpression::PrefixExpression(token::Token const& new_operator_type,
-                                       ExpressionPtr const& new_expression)
+                                       Expression const& new_expression)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
       expression(new_expression)
@@ -88,7 +88,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& PrefixExpression::get_expression() const noexcept
+    Expression const& PrefixExpression::get_expression() const noexcept
     {
         return expression;
     }
@@ -97,8 +97,8 @@ namespace basically::ast
 
 
     BinaryExpression::BinaryExpression(token::Token const& new_operator_type,
-                                       ExpressionPtr const& new_lhs,
-                                       ExpressionPtr const& new_rhs)
+                                       Expression const& new_lhs,
+                                       Expression const& new_rhs)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
       lhs(new_lhs),
@@ -113,13 +113,13 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& BinaryExpression::get_lhs() const noexcept
+    Expression const& BinaryExpression::get_lhs() const noexcept
     {
         return lhs;
     }
 
 
-    ExpressionPtr const& BinaryExpression::get_rhs() const noexcept
+    Expression const& BinaryExpression::get_rhs() const noexcept
     {
         return rhs;
     }
@@ -127,7 +127,7 @@ namespace basically::ast
 
 
 
-    PostfixExpression::PostfixExpression(ExpressionPtr const& new_expression,
+    PostfixExpression::PostfixExpression(Expression const& new_expression,
                                          token::Token const& new_operator_type)
     : ExpressionBase(new_operator_type.location),
       expression(new_expression),
@@ -136,7 +136,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& PostfixExpression::get_expression() const noexcept
+    Expression const& PostfixExpression::get_expression() const noexcept
     {
         return expression;
     }
@@ -172,7 +172,7 @@ namespace basically::ast
 
     DoStatement::DoStatement(source::Location const& new_location,
                              token::Token const& new_terminator,
-                             ExpressionPtr const& new_test,
+                             Expression const& new_test,
                              StatementList const& new_body)
     : StatementBase(new_location),
       terminator(new_terminator),
@@ -188,7 +188,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& DoStatement::get_test() const noexcept
+    Expression const& DoStatement::get_test() const noexcept
     {
         return test;
     }
@@ -204,9 +204,9 @@ namespace basically::ast
 
     ForStatement::ForStatement(source::Location const& new_location,
                                token::Token const& new_index_name,
-                               ExpressionPtr const& new_start_index,
-                               ExpressionPtr const& new_end_index,
-                               ExpressionPtr const& new_step_value,
+                               Expression const& new_start_index,
+                               Expression const& new_end_index,
+                               OptionalExpression const& new_step_value,
                                StatementList const& new_body)
     : StatementBase(new_location),
       index_name(new_index_name),
@@ -224,19 +224,19 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& ForStatement::get_start_index() const noexcept
+    Expression const& ForStatement::get_start_index() const noexcept
     {
         return start_index;
     }
 
 
-    ExpressionPtr const& ForStatement::get_end_index() const noexcept
+    Expression const& ForStatement::get_end_index() const noexcept
     {
         return end_index;
     }
 
 
-    ExpressionPtr const& ForStatement::get_step_value() const noexcept
+    OptionalExpression const& ForStatement::get_step_value() const noexcept
     {
         return step_value;
     }
@@ -367,7 +367,7 @@ namespace basically::ast
 
 
     SelectStatement::SelectStatement(source::Location const& new_location,
-                                    ExpressionPtr const& new_test,
+                                    Expression const& new_test,
                                     ConditionalBlockList const& new_conditions,
                                     StatementList const& new_default_condition)
     : StatementBase(new_location),
@@ -378,7 +378,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& SelectStatement::get_test() const noexcept
+    Expression const& SelectStatement::get_test() const noexcept
     {
         return test;
     }
@@ -423,10 +423,11 @@ namespace basically::ast
 
 
 
-    VariableDeclarationStatement::VariableDeclarationStatement(source::Location const& new_location,
-                                                               token::Token const& new_name,
-                                                               token::Token const& new_type_name,
-                                                               ExpressionPtr const& new_initializer)
+    VariableDeclarationStatement::VariableDeclarationStatement(
+                                                          source::Location const& new_location,
+                                                          token::Token const& new_name,
+                                                          token::Token const& new_type_name,
+                                                          OptionalExpression const& new_initializer)
     : StatementBase(new_location),
       name(new_name),
       type_name(new_type_name),
@@ -447,7 +448,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& VariableDeclarationStatement::get_initilizer() const noexcept
+    OptionalExpression const& VariableDeclarationStatement::get_initilizer() const noexcept
     {
         return initializer;
     }
@@ -457,7 +458,7 @@ namespace basically::ast
 
     AssignmentStatement::AssignmentStatement(source::Location const& new_location,
                                              token::Token const& new_name,
-                                             ExpressionPtr const& new_value)
+                                             Expression const& new_value)
     : StatementBase(new_location),
       name(new_name),
       value(new_value)
@@ -471,7 +472,7 @@ namespace basically::ast
     }
 
 
-    ExpressionPtr const& AssignmentStatement::get_value() const noexcept
+    Expression const& AssignmentStatement::get_value() const noexcept
     {
         return value;
     }
