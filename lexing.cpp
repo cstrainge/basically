@@ -2,8 +2,7 @@
 #include "basically.h"
 
 
-
-namespace basically::token
+namespace basically::lexing
 {
 
 

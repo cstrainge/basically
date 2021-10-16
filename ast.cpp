@@ -35,14 +35,14 @@ namespace basically::ast
 
 
 
-    LiteralExpression::LiteralExpression(token::Token const& new_value)
+    LiteralExpression::LiteralExpression(lexing::Token const& new_value)
     : ExpressionBase(new_value.location),
       value(new_value)
     {
     }
 
 
-    token::Token const& LiteralExpression::get_value() const noexcept
+    lexing::Token const& LiteralExpression::get_value() const noexcept
     {
         return value;
     }
@@ -50,7 +50,7 @@ namespace basically::ast
 
 
 
-    VariableReadExpression::VariableReadExpression(token::Token const& new_name,
+    VariableReadExpression::VariableReadExpression(lexing::Token const& new_name,
                                                    Expression const& new_subscript)
     : ExpressionBase(new_name.location),
       name(new_name),
@@ -59,7 +59,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& VariableReadExpression::get_name() const noexcept
+    lexing::Token const& VariableReadExpression::get_name() const noexcept
     {
         return name;
     }
@@ -73,7 +73,7 @@ namespace basically::ast
 
 
 
-    PrefixExpression::PrefixExpression(token::Token const& new_operator_type,
+    PrefixExpression::PrefixExpression(lexing::Token const& new_operator_type,
                                        Expression const& new_expression)
     : ExpressionBase(new_operator_type.location),
       operator_type(new_operator_type),
@@ -82,7 +82,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& PrefixExpression::get_operator_type() const noexcept
+    lexing::Token const& PrefixExpression::get_operator_type() const noexcept
     {
         return operator_type;
     }
@@ -96,7 +96,7 @@ namespace basically::ast
 
 
 
-    BinaryExpression::BinaryExpression(token::Token const& new_operator_type,
+    BinaryExpression::BinaryExpression(lexing::Token const& new_operator_type,
                                        Expression const& new_lhs,
                                        Expression const& new_rhs)
     : ExpressionBase(new_operator_type.location),
@@ -107,7 +107,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& BinaryExpression::get_operator_type() const noexcept
+    lexing::Token const& BinaryExpression::get_operator_type() const noexcept
     {
         return operator_type;
     }
@@ -128,7 +128,7 @@ namespace basically::ast
 
 
     PostfixExpression::PostfixExpression(Expression const& new_expression,
-                                         token::Token const& new_operator_type)
+                                         lexing::Token const& new_operator_type)
     : ExpressionBase(new_operator_type.location),
       expression(new_expression),
       operator_type(new_operator_type)
@@ -142,13 +142,13 @@ namespace basically::ast
     }
 
 
-    token::Token const& PostfixExpression::get_operator_type() const noexcept
+    lexing::Token const& PostfixExpression::get_operator_type() const noexcept
     {
         return operator_type;
     }
 
 
-    FunctionCallExpression::FunctionCallExpression(token::Token const& new_name,
+    FunctionCallExpression::FunctionCallExpression(lexing::Token const& new_name,
                                                    ExpressionList const& new_parameters)
     : ExpressionBase(new_name.location),
       name(new_name),
@@ -156,7 +156,7 @@ namespace basically::ast
     {
     }
 
-    token::Token const& FunctionCallExpression::get_name() const noexcept
+    lexing::Token const& FunctionCallExpression::get_name() const noexcept
     {
         return name;
     }
@@ -171,7 +171,7 @@ namespace basically::ast
 
 
     DoStatement::DoStatement(source::Location const& new_location,
-                             token::Token const& new_terminator,
+                             lexing::Token const& new_terminator,
                              Expression const& new_test,
                              StatementList const& new_body)
     : StatementBase(new_location),
@@ -182,7 +182,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& DoStatement::get_terminator() const noexcept
+    lexing::Token const& DoStatement::get_terminator() const noexcept
     {
         return terminator;
     }
@@ -203,7 +203,7 @@ namespace basically::ast
 
 
     ForStatement::ForStatement(source::Location const& new_location,
-                               token::Token const& new_index_name,
+                               lexing::Token const& new_index_name,
                                Expression const& new_start_index,
                                Expression const& new_end_index,
                                OptionalExpression const& new_step_value,
@@ -218,7 +218,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& ForStatement::get_index_name() const noexcept
+    lexing::Token const& ForStatement::get_index_name() const noexcept
     {
         return index_name;
     }
@@ -251,7 +251,7 @@ namespace basically::ast
 
 
     SubDeclarationStatement::SubDeclarationStatement(source::Location const& new_location,
-                                                     token::Token const& new_name,
+                                                     lexing::Token const& new_name,
                                                      VariableDeclarationList const& new_parameters,
                                                      StatementList const& new_body)
     : StatementBase(new_location),
@@ -262,7 +262,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& SubDeclarationStatement::get_name() const noexcept
+    lexing::Token const& SubDeclarationStatement::get_name() const noexcept
     {
         return name;
     }
@@ -284,9 +284,9 @@ namespace basically::ast
 
     FunctionDeclarationStatement::FunctionDeclarationStatement(
                                                       source::Location const& new_location,
-                                                      token::Token const& new_name,
+                                                      lexing::Token const& new_name,
                                                       VariableDeclarationList const& new_parameters,
-                                                      token::Token const& new_return_type,
+                                                      lexing::Token const& new_return_type,
                                                       StatementList const& new_body)
     : SubDeclarationStatement(new_location, new_name, new_parameters, new_body),
       return_type(new_return_type)
@@ -294,7 +294,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& FunctionDeclarationStatement::get_return_type() const noexcept
+    lexing::Token const& FunctionDeclarationStatement::get_return_type() const noexcept
     {
         return return_type;
     }
@@ -335,14 +335,14 @@ namespace basically::ast
 
 
     LoadStatement::LoadStatement(source::Location const& new_location,
-                                 token::Token new_module_name)
+                                 lexing::Token new_module_name)
     : StatementBase(new_location),
       module_name(new_module_name)
     {
     }
 
 
-    token::Token const& LoadStatement::get_module_name() const noexcept
+    lexing::Token const& LoadStatement::get_module_name() const noexcept
     {
         return module_name;
     }
@@ -400,7 +400,7 @@ namespace basically::ast
 
     StructureDeclarationStatement::StructureDeclarationStatement(
                                                          source::Location const& new_location,
-                                                         token::Token const& new_name,
+                                                         lexing::Token const& new_name,
                                                          VariableDeclarationList const& new_members)
     : StatementBase(new_location),
       name(new_name),
@@ -409,7 +409,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& StructureDeclarationStatement::get_name() const noexcept
+    lexing::Token const& StructureDeclarationStatement::get_name() const noexcept
     {
         return name;
     }
@@ -425,8 +425,8 @@ namespace basically::ast
 
     VariableDeclarationStatement::VariableDeclarationStatement(
                                                           source::Location const& new_location,
-                                                          token::Token const& new_name,
-                                                          token::Token const& new_type_name,
+                                                          lexing::Token const& new_name,
+                                                          lexing::Token const& new_type_name,
                                                           OptionalExpression const& new_initializer)
     : StatementBase(new_location),
       name(new_name),
@@ -436,13 +436,13 @@ namespace basically::ast
     }
 
 
-    token::Token const& VariableDeclarationStatement::get_name() const noexcept
+    lexing::Token const& VariableDeclarationStatement::get_name() const noexcept
     {
         return name;
     }
 
 
-    token::Token const& VariableDeclarationStatement::get_type_name() const noexcept
+    lexing::Token const& VariableDeclarationStatement::get_type_name() const noexcept
     {
         return type_name;
     }
@@ -457,7 +457,7 @@ namespace basically::ast
 
 
     AssignmentStatement::AssignmentStatement(source::Location const& new_location,
-                                             token::Token const& new_name,
+                                             lexing::Token const& new_name,
                                              Expression const& new_value)
     : StatementBase(new_location),
       name(new_name),
@@ -466,7 +466,7 @@ namespace basically::ast
     }
 
 
-    token::Token const& AssignmentStatement::get_name() const noexcept
+    lexing::Token const& AssignmentStatement::get_name() const noexcept
     {
         return name;
     }
@@ -481,7 +481,7 @@ namespace basically::ast
 
 
     SubCallStatement::SubCallStatement(source::Location const& new_location,
-                                       token::Token const& new_name,
+                                       lexing::Token const& new_name,
                                        ExpressionList const& new_parameters)
     : StatementBase(new_location),
       name(new_name),
@@ -489,7 +489,7 @@ namespace basically::ast
     {
     }
 
-    token::Token const& SubCallStatement::get_name() const noexcept
+    lexing::Token const& SubCallStatement::get_name() const noexcept
     {
         return name;
     }
@@ -499,7 +499,6 @@ namespace basically::ast
     {
         return parameters;
     }
-
 
 
 }

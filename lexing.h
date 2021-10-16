@@ -2,7 +2,7 @@
 #pragma once
 
 
-namespace basically::token
+namespace basically::lexing
 {
 
 
@@ -111,7 +111,6 @@ namespace basically::token
             bool is_char_in_collection(OptionalChar const& next,
                                        CollectionType const& collection) const noexcept;
     };
-
 
 
 }

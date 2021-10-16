@@ -2,7 +2,7 @@
 #include "basically.h"
 
 
-namespace basically::parse
+namespace basically::parsing
 {
 
 
@@ -27,19 +27,19 @@ namespace basically::parse
         }
 
 
-        ast::Expression parse_expression(token::Buffer& buffer,
-                                            Precedence precedence = Precedence::None);
+        ast::Expression parse_expression(lexing::Buffer& buffer,
+                                         Precedence precedence = Precedence::None);
 
-        ast::ExpressionList parse_parameter_expressions(token::Buffer& buffer);
+        ast::ExpressionList parse_parameter_expressions(lexing::Buffer& buffer);
 
-        ast::Statement parse_statement(token::Buffer& buffer);
+        ast::Statement parse_statement(lexing::Buffer& buffer);
 
 
         template <typename ItemType>
         std::ostream& operator <<(std::ostream& stream,
-                                  std::unordered_map<token::Type, ItemType> const& value)
+                                  std::unordered_map<lexing::Type, ItemType> const& value)
         {
-            token::TypeSet types;
+            lexing::TypeSet types;
 
             std::for_each(value.begin(), value.end(), [&](auto next) { types.insert(next.first); });
             stream << types;
@@ -48,15 +48,15 @@ namespace basically::parse
         }
 
 
-        using PrefixHandler = std::function<ast::Expression(token::Buffer&, token::Token const&)>;
-        using PrefixHandlerMap = std::unordered_map<token::Type, PrefixHandler>;
+        using PrefixHandler = std::function<ast::Expression(lexing::Buffer&, lexing::Token const&)>;
+        using PrefixHandlerMap = std::unordered_map<lexing::Type, PrefixHandler>;
 
-        using InfixHandler = std::function<ast::Expression(token::Buffer&, ast::Expression&, token::Token const&)>;
-        using InfixHandlerMap = std::unordered_map<token::Type, Precedence>;
+        using InfixHandler = std::function<ast::Expression(lexing::Buffer&, ast::Expression&, lexing::Token const&)>;
+        using InfixHandlerMap = std::unordered_map<lexing::Type, Precedence>;
 
 
-        using StatementHandler = std::function<ast::Statement(token::Buffer&, token::Token&)>;
-        using StatementHandlerMap = std::unordered_map<token::Type, StatementHandler>;
+        using StatementHandler = std::function<ast::Statement(lexing::Buffer&, lexing::Token&)>;
+        using StatementHandlerMap = std::unordered_map<lexing::Type, StatementHandler>;
 
 
         [[noreturn]]
@@ -71,7 +71,7 @@ namespace basically::parse
 
         template <typename ExpectedType>
         [[noreturn]]
-        void expected_token_exception(ExpectedType expected, token::Token const& found)
+        void expected_token_exception(ExpectedType expected, lexing::Token const& found)
         {
             std::stringstream message_stream;
 
@@ -88,7 +88,7 @@ namespace basically::parse
         }
 
 
-        token::Token expect_token(token::Buffer& buffer, token::Type expected)
+        lexing::Token expect_token(lexing::Buffer& buffer, lexing::Type expected)
         {
             auto next = buffer.next();
 
@@ -101,10 +101,10 @@ namespace basically::parse
         }
 
 
-        template <token::Type... token_types>
-        token::Token expect_one_of(token::Buffer& buffer)
+        template <lexing::Type... token_types>
+        lexing::Token expect_one_of(lexing::Buffer& buffer)
         {
-            static const token::TypeSet expected_types({token_types...});
+            static const lexing::TypeSet expected_types({token_types...});
 
             auto found = buffer.next();
             auto iterator = expected_types.find(found.type);
@@ -118,62 +118,62 @@ namespace basically::parse
         }
 
 
-        token::Token expect_identifier(token::Buffer& buffer)
+        lexing::Token expect_identifier(lexing::Buffer& buffer)
         {
-            return expect_token(buffer, token::Type::Identifier);
+            return expect_token(buffer, lexing::Type::Identifier);
         }
 
 
-        token::Token expect_numeric_literal(token::Buffer& buffer)
+        lexing::Token expect_numeric_literal(lexing::Buffer& buffer)
         {
-            return expect_one_of<token::Type::LiteralInt, token::Type::LiteralFloat>(buffer);
+            return expect_one_of<lexing::Type::LiteralInt, lexing::Type::LiteralFloat>(buffer);
         }
 
 
-        void expect_as(token::Buffer& buffer)
+        void expect_as(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::KeywordAs);
+            expect_token(buffer, lexing::Type::KeywordAs);
         }
 
 
-        void expect_assign(token::Buffer& buffer)
+        void expect_assign(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::SymbolAssign);
+            expect_token(buffer, lexing::Type::SymbolAssign);
         }
 
 
-        void expect_to(token::Buffer& buffer)
+        void expect_to(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::KeywordTo);
+            expect_token(buffer, lexing::Type::KeywordTo);
         }
 
 
-        void expect_open_bracket(token::Buffer& buffer)
+        void expect_open_bracket(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::SymbolOpenBracket);
+            expect_token(buffer, lexing::Type::SymbolOpenBracket);
         }
 
 
-        void expect_close_bracket(token::Buffer& buffer)
+        void expect_close_bracket(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::SymbolCloseBracket);
+            expect_token(buffer, lexing::Type::SymbolCloseBracket);
         }
 
 
-        void expect_close_square_bracket(token::Buffer& buffer)
+        void expect_close_square_bracket(lexing::Buffer& buffer)
         {
-            expect_token(buffer, token::Type::SymbolCloseSquare);
+            expect_token(buffer, lexing::Type::SymbolCloseSquare);
         }
 
 
-        void expect_end_for(token::Buffer& buffer, token::Token const& start_token)
+        void expect_end_for(lexing::Buffer& buffer, lexing::Token const& start_token)
         {
-            expect_token(buffer, token::Type::KeywordEnd);
+            expect_token(buffer, lexing::Type::KeywordEnd);
             expect_token(buffer, start_token.type);
         }
 
 
-        token::OptionalToken optional_token(token::Buffer& buffer, token::Type type)
+        lexing::OptionalToken optional_token(lexing::Buffer& buffer, lexing::Type type)
         {
             buffer.mark_lookahead();
             auto next = buffer.next();
@@ -189,68 +189,68 @@ namespace basically::parse
         }
 
 
-        bool found_optional_token(token::Buffer& buffer, token::Type type)
+        bool found_optional_token(lexing::Buffer& buffer, lexing::Type type)
         {
             return optional_token(buffer, type).has_value();
         }
 
 
-        bool found_assign(token::Buffer& buffer)
+        bool found_assign(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::SymbolAssign);
+            return found_optional_token(buffer, lexing::Type::SymbolAssign);
         }
 
 
-        bool found_while(token::Buffer& buffer)
+        bool found_while(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::KeywordWhile);
+            return found_optional_token(buffer, lexing::Type::KeywordWhile);
         }
 
 
-        bool found_step(token::Buffer& buffer)
+        bool found_step(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::KeywordStep);
+            return found_optional_token(buffer, lexing::Type::KeywordStep);
         }
 
 
-        bool found_until(token::Buffer& buffer)
+        bool found_until(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::KeywordUntil);
+            return found_optional_token(buffer, lexing::Type::KeywordUntil);
         }
 
 
-        bool found_else(token::Buffer& buffer)
+        bool found_else(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::KeywordElse);
+            return found_optional_token(buffer, lexing::Type::KeywordElse);
         }
 
 
-        bool found_case(token::Buffer& buffer)
+        bool found_case(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::KeywordCase);
+            return found_optional_token(buffer, lexing::Type::KeywordCase);
         }
 
 
-        bool found_open_square_bracket(token::Buffer& buffer)
+        bool found_open_square_bracket(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::SymbolOpenSquare);
+            return found_optional_token(buffer, lexing::Type::SymbolOpenSquare);
         }
 
 
-        bool found_comma(token::Buffer& buffer)
+        bool found_comma(lexing::Buffer& buffer)
         {
-            return found_optional_token(buffer, token::Type::SymbolComma);
+            return found_optional_token(buffer, lexing::Type::SymbolComma);
         }
 
 
-        ast::Expression parse_literal_expression(token::Buffer& buffer,
-                                                    token::Token const& literal)
+        ast::Expression parse_literal_expression(lexing::Buffer& buffer,
+                                                 lexing::Token const& literal)
         {
             return std::make_shared<ast::LiteralExpression>(literal);
         }
 
 
-        ast::Expression parse_call_expression(token::Buffer& buffer, token::Token const& name)
+        ast::Expression parse_call_expression(lexing::Buffer& buffer, lexing::Token const& name)
         {
             expect_open_bracket(buffer);
             auto parameters = parse_parameter_expressions(buffer);
@@ -260,9 +260,9 @@ namespace basically::parse
         }
 
 
-        ast::Expression parse_name_expression(token::Buffer& buffer, token::Token const& name)
+        ast::Expression parse_name_expression(lexing::Buffer& buffer, lexing::Token const& name)
         {
-            if (buffer.peek_next().type == token::Type::SymbolOpenBracket)
+            if (buffer.peek_next().type == lexing::Type::SymbolOpenBracket)
             {
                 return parse_call_expression(buffer, name);
             }
@@ -279,7 +279,7 @@ namespace basically::parse
         }
 
 
-        ast::Expression parse_group_expression(token::Buffer& buffer, token::Token const& open)
+        ast::Expression parse_group_expression(lexing::Buffer& buffer, lexing::Token const& open)
         {
             auto expression = parse_expression(buffer);
             expect_close_bracket(buffer);
@@ -288,10 +288,10 @@ namespace basically::parse
         }
 
 
-        ast::Expression parse_binary_expression(token::Buffer& buffer,
-                                                   Precedence precedence,
-                                                   ast::Expression const& left,
-                                                   token::Token const& operator_token)
+        ast::Expression parse_binary_expression(lexing::Buffer& buffer,
+                                                Precedence precedence,
+                                                ast::Expression const& left,
+                                                lexing::Token const& operator_token)
         {
             return std::make_shared<ast::BinaryExpression>(operator_token,
                                                            left,
@@ -299,32 +299,32 @@ namespace basically::parse
         }
 
 
-        ast::Expression parse_expression(token::Buffer& buffer, Precedence precedence)
+        ast::Expression parse_expression(lexing::Buffer& buffer, Precedence precedence)
         {
             static const PrefixHandlerMap prefix_handlers =
                 {
-                    { token::Type::LiteralFloat,      parse_literal_expression },
-                    { token::Type::LiteralInt,        parse_literal_expression },
-                    { token::Type::LiteralString,     parse_literal_expression },
-                    { token::Type::Identifier,        parse_name_expression    },
-                    { token::Type::SymbolOpenBracket, parse_group_expression   }
+                    { lexing::Type::LiteralFloat,      parse_literal_expression },
+                    { lexing::Type::LiteralInt,        parse_literal_expression },
+                    { lexing::Type::LiteralString,     parse_literal_expression },
+                    { lexing::Type::Identifier,        parse_name_expression    },
+                    { lexing::Type::SymbolOpenBracket, parse_group_expression   }
                 };
 
             static const InfixHandlerMap infix_handlers =
                 {
-                    { token::Type::SymbolPlus,        Precedence::Sum },
-                    { token::Type::SymbolMinus,       Precedence::Sum },
-                    { token::Type::SymbolTimes,       Precedence::Product },
-                    { token::Type::SymbolDivide,      Precedence::Product },
+                    { lexing::Type::SymbolPlus,        Precedence::Sum         },
+                    { lexing::Type::SymbolMinus,       Precedence::Sum         },
+                    { lexing::Type::SymbolTimes,       Precedence::Product     },
+                    { lexing::Type::SymbolDivide,      Precedence::Product     },
 
-                    { token::Type::SymbolEqual,       Precedence::Equality },
-                    { token::Type::SymbolNotEqual,    Precedence::Equality },
-                    { token::Type::SymbolGreaterThan, Precedence::Equality },
-                    { token::Type::SymbolLessThan,    Precedence::Equality },
+                    { lexing::Type::SymbolEqual,       Precedence::Equality    },
+                    { lexing::Type::SymbolNotEqual,    Precedence::Equality    },
+                    { lexing::Type::SymbolGreaterThan, Precedence::Equality    },
+                    { lexing::Type::SymbolLessThan,    Precedence::Equality    },
 
-                    { token::Type::KeywordNot,        Precedence::Conditional },
-                    { token::Type::KeywordAnd,        Precedence::Conditional },
-                    { token::Type::KeywordOr,         Precedence::Conditional }
+                    { lexing::Type::KeywordNot,        Precedence::Conditional },
+                    { lexing::Type::KeywordAnd,        Precedence::Conditional },
+                    { lexing::Type::KeywordOr,         Precedence::Conditional }
                 };
 
             auto peek_next_precedence = [&]() -> Precedence
@@ -363,7 +363,7 @@ namespace basically::parse
         }
 
 
-        ast::ExpressionList parse_parameter_expressions(token::Buffer& buffer)
+        ast::ExpressionList parse_parameter_expressions(lexing::Buffer& buffer)
         {
             ast::ExpressionList expressions;
 
@@ -377,15 +377,15 @@ namespace basically::parse
         }
 
 
-        ast::StatementList parse_block_body_for(token::Buffer& buffer,
-                                                token::Token const& start_token)
+        ast::StatementList parse_block_body_for(lexing::Buffer& buffer,
+                                                lexing::Token const& start_token)
         {
             auto not_at_end = [&]() -> bool
                 {
                     auto next = buffer.peek_next();
 
-                    return    (next.type != token::Type::KeywordEnd)
-                           && (next.type != token::Type::Eof);
+                    return    (next.type != lexing::Type::KeywordEnd)
+                           && (next.type != lexing::Type::Eof);
                 };
 
             ast::StatementList body_statements;
@@ -402,10 +402,10 @@ namespace basically::parse
 
 
         ast::VariableDeclarationStatementPtr parse_variable_declaration(
-                                                                    token::Buffer& buffer,
-                                                                    token::Token const& start_token)
+                                                                   lexing::Buffer& buffer,
+                                                                   lexing::Token const& start_token)
         {
-            auto name_token = start_token.type != token::Type::Identifier
+            auto name_token = start_token.type != lexing::Type::Identifier
                 ? expect_identifier(buffer)
                 : start_token;
 
@@ -423,13 +423,13 @@ namespace basically::parse
 
 
         ast::VariableDeclarationList parse_parameter_declarations(
-                                                   token::Buffer& buffer,
-                                                   token::Type delimiter = token::Type::SymbolComma,
-                                                   token::Type end_token = token::Type::None)
+                                                 lexing::Buffer& buffer,
+                                                 lexing::Type delimiter = lexing::Type::SymbolComma,
+                                                 lexing::Type end_token = lexing::Type::None)
         {
-            auto not_at_end = [&](token::Token const& next) -> bool
+            auto not_at_end = [&](lexing::Token const& next) -> bool
                 {
-                    if (   (delimiter != token::Type::None)
+                    if (   (delimiter != lexing::Type::None)
                         && (next.type == delimiter))
                     {
                         return true;
@@ -439,7 +439,7 @@ namespace basically::parse
                 };
 
             ast::VariableDeclarationList vars;
-            token::Token next;
+            lexing::Token next;
 
             do
             {
@@ -461,10 +461,10 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_do_statement(token::Buffer& buffer, token::Token& do_token)
+        ast::Statement parse_do_statement(lexing::Buffer& buffer, lexing::Token& do_token)
         {
-            auto terminator = expect_one_of<token::Type::KeywordWhile,
-                                            token::Type::KeywordUntil>(buffer);
+            auto terminator = expect_one_of<lexing::Type::KeywordWhile,
+                                            lexing::Type::KeywordUntil>(buffer);
 
             auto loop_test = parse_expression(buffer);
             auto loop_body = parse_block_body_for(buffer, do_token);
@@ -476,7 +476,7 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_for_statement(token::Buffer& buffer, token::Token& for_token)
+        ast::Statement parse_for_statement(lexing::Buffer& buffer, lexing::Token& for_token)
         {
             auto index_name = expect_identifier(buffer);
             expect_assign(buffer);
@@ -496,7 +496,7 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_sub_statement(token::Buffer& buffer, token::Token& sub_token)
+        ast::Statement parse_sub_statement(lexing::Buffer& buffer, lexing::Token& sub_token)
         {
             auto name = expect_identifier(buffer);
             expect_open_bracket(buffer);
@@ -511,8 +511,8 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_function_statement(token::Buffer& buffer,
-                                                   token::Token& function_token)
+        ast::Statement parse_function_statement(lexing::Buffer& buffer,
+                                                lexing::Token& function_token)
         {
             auto name = expect_identifier(buffer);
             expect_open_bracket(buffer);
@@ -530,17 +530,17 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_if_statement(token::Buffer& buffer, token::Token& if_token)
+        ast::Statement parse_if_statement(lexing::Buffer& buffer, lexing::Token& if_token)
         {
-            auto expect_then = [&]() { expect_token(buffer, token::Type::KeywordThen); };
+            auto expect_then = [&]() { expect_token(buffer, lexing::Type::KeywordThen); };
 
             auto found_end_if_tokens = [&]() -> bool
                 {
                     auto next = buffer.peek_next();
 
-                    return   (next.type == token::Type::Eof)
-                          || (next.type == token::Type::KeywordEnd)
-                          || (next.type == token::Type::KeywordElse);
+                    return   (next.type == lexing::Type::Eof)
+                          || (next.type == lexing::Type::KeywordEnd)
+                          || (next.type == lexing::Type::KeywordElse);
                 };
 
             auto got_optional_else_if_tokens = [&]() -> bool
@@ -550,8 +550,8 @@ namespace basically::parse
                     auto else_token = buffer.next();
                     auto if_token = buffer.next();
 
-                    if (   (else_token.type == token::Type::KeywordElse)
-                        && (if_token.type == token::Type::KeywordIf))
+                    if (   (else_token.type == lexing::Type::KeywordElse)
+                        && (if_token.type == lexing::Type::KeywordIf))
                     {
                         buffer.commit_lookahead();
                         return true;
@@ -617,33 +617,33 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_load_statement(token::Buffer& buffer, token::Token& load_token)
+        ast::Statement parse_load_statement(lexing::Buffer& buffer, lexing::Token& load_token)
         {
             return std::make_shared<ast::LoadStatement>(load_token.location,
                                                         expect_identifier(buffer));
         }
 
 
-        ast::Statement parse_loop_statement(token::Buffer& buffer, token::Token& loop_token)
+        ast::Statement parse_loop_statement(lexing::Buffer& buffer, lexing::Token& loop_token)
         {
             return std::make_shared<ast::LoopStatement>(loop_token.location,
                                                         parse_block_body_for(buffer, loop_token));
         }
 
 
-        ast::Statement parse_select_statement(token::Buffer& buffer, token::Token& select_token)
+        ast::Statement parse_select_statement(lexing::Buffer& buffer, lexing::Token& select_token)
         {
-            auto found_case_end_tokens = [](token::Buffer& buffer) -> bool
+            auto found_case_end_tokens = [](lexing::Buffer& buffer) -> bool
                 {
                     auto next = buffer.peek_next();
 
-                    return   (next.type == token::Type::Eof)
-                          || (next.type == token::Type::KeywordEnd)
-                          || (next.type == token::Type::KeywordElse)
-                          || (next.type == token::Type::KeywordCase);
+                    return   (next.type == lexing::Type::Eof)
+                          || (next.type == lexing::Type::KeywordEnd)
+                          || (next.type == lexing::Type::KeywordElse)
+                          || (next.type == lexing::Type::KeywordCase);
                 };
 
-            auto parse_case_block_statements = [&](token::Buffer& buffer) -> ast::StatementList
+            auto parse_case_block_statements = [&](lexing::Buffer& buffer) -> ast::StatementList
                 {
                     ast::StatementList statements;
 
@@ -655,7 +655,7 @@ namespace basically::parse
                     return statements;
                 };
 
-            auto parse_select_blocks = [&](token::Buffer& buffer) -> ast::ConditionalBlockList
+            auto parse_select_blocks = [&](lexing::Buffer& buffer) -> ast::ConditionalBlockList
                 {
                     ast::ConditionalBlockList block_list;
 
@@ -670,7 +670,7 @@ namespace basically::parse
                     return block_list;
                 };
 
-            auto parse_default_block = [&](token::Buffer& buffer) -> ast::StatementList
+            auto parse_default_block = [&](lexing::Buffer& buffer) -> ast::StatementList
                 {
                     if (found_else(buffer))
                     {
@@ -693,13 +693,13 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_structure_statement(token::Buffer& buffer,
-                                                    token::Token& structure_token)
+        ast::Statement parse_structure_statement(lexing::Buffer& buffer,
+                                                 lexing::Token& structure_token)
         {
             auto name = expect_identifier(buffer);
             auto members = parse_parameter_declarations(buffer,
-                                                        token::Type::None,
-                                                        token::Type::KeywordEnd);
+                                                        lexing::Type::None,
+                                                        lexing::Type::KeywordEnd);
 
             expect_token(buffer, structure_token.type);
 
@@ -709,18 +709,18 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_variable_declaration_statement(token::Buffer& buffer,
-                                                               token::Token& var_token)
+        ast::Statement parse_variable_declaration_statement(lexing::Buffer& buffer,
+                                                            lexing::Token& var_token)
         {
             return parse_variable_declaration(buffer, var_token);
         }
 
 
-        ast::Statement parse_identifier_statement(token::Buffer& buffer,
-                                                     token::Token& identifier_token)
+        ast::Statement parse_identifier_statement(lexing::Buffer& buffer,
+                                                  lexing::Token& identifier_token)
         {
-            auto next = expect_one_of<token::Type::SymbolOpenBracket,
-                                      token::Type::SymbolAssign>(buffer);
+            auto next = expect_one_of<lexing::Type::SymbolOpenBracket,
+                                      lexing::Type::SymbolAssign>(buffer);
 
             auto parse_assignment_statement = [&]() -> ast::Statement
                 {
@@ -740,7 +740,7 @@ namespace basically::parse
                                                                    parameters);
                 };
 
-            if (next.type == token::Type::SymbolAssign)
+            if (next.type == lexing::Type::SymbolAssign)
             {
                 return parse_assignment_statement();
             }
@@ -749,21 +749,21 @@ namespace basically::parse
         }
 
 
-        ast::Statement parse_statement(token::Buffer& buffer)
+        ast::Statement parse_statement(lexing::Buffer& buffer)
         {
             static const StatementHandlerMap statement_parse_map =
                 {
-                    { token::Type::KeywordDo,        parse_do_statement                   },
-                    { token::Type::KeywordFor,       parse_for_statement                  },
-                    { token::Type::KeywordSub,       parse_sub_statement                  },
-                    { token::Type::KeywordFunction,  parse_function_statement             },
-                    { token::Type::KeywordIf,        parse_if_statement                   },
-                    { token::Type::KeywordLoad,      parse_load_statement                 },
-                    { token::Type::KeywordLoop,      parse_loop_statement                 },
-                    { token::Type::KeywordSelect,    parse_select_statement               },
-                    { token::Type::KeywordStructure, parse_structure_statement            },
-                    { token::Type::KeywordVar,       parse_variable_declaration_statement },
-                    { token::Type::Identifier,       parse_identifier_statement           }
+                    { lexing::Type::KeywordDo,        parse_do_statement                   },
+                    { lexing::Type::KeywordFor,       parse_for_statement                  },
+                    { lexing::Type::KeywordSub,       parse_sub_statement                  },
+                    { lexing::Type::KeywordFunction,  parse_function_statement             },
+                    { lexing::Type::KeywordIf,        parse_if_statement                   },
+                    { lexing::Type::KeywordLoad,      parse_load_statement                 },
+                    { lexing::Type::KeywordLoop,      parse_loop_statement                 },
+                    { lexing::Type::KeywordSelect,    parse_select_statement               },
+                    { lexing::Type::KeywordStructure, parse_structure_statement            },
+                    { lexing::Type::KeywordVar,       parse_variable_declaration_statement },
+                    { lexing::Type::Identifier,       parse_identifier_statement           }
                 };
 
             auto next = buffer.next();
@@ -781,11 +781,11 @@ namespace basically::parse
     }
 
 
-    ast::StatementList parse_to_ast(token::Buffer& buffer)
+    ast::StatementList parse_to_ast(lexing::Buffer& buffer)
     {
         ast::StatementList toplevel;
 
-        while (buffer.peek_next().type != token::Type::Eof)
+        while (buffer.peek_next().type != lexing::Type::Eof)
         {
             toplevel.push_back(parse_statement(buffer));
         }

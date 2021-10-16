@@ -41,9 +41,9 @@
 
 
     #include "source.h"
-    #include "token.h"
+    #include "lexing.h"
     #include "ast.h"
-    #include "parse.h"
+    #include "parsing.h"
     #include "typing.h"
     #include "variables.h"
     #include "modules.h"

@@ -54,6 +54,25 @@ namespace basically::ast
     };
 
 
+    struct HandlerBase
+    {
+        protected:
+            template <typename DataType, typename HandlerType, typename DefaultHandlerType>
+            void call_handler(DataType const& object,
+                              HandlerType& handler,
+                              DefaultHandlerType default_handler)
+            {
+                if (!handler)
+                {
+                    assert(default_handler);
+                    default_handler(object);
+                }
+
+                handler(object);
+            }
+    };
+
+
     class LiteralExpression;
     class VariableReadExpression;
     class PrefixExpression;
@@ -81,7 +100,7 @@ namespace basically::ast
     using ExpressionList = std::list<Expression>;
 
 
-    struct ExpressionHandler
+    struct ExpressionHandler : HandlerBase
     {
         std::function<void(LiteralExpressionPtr const&)> literal_expression;
         std::function<void(VariableReadExpressionPtr const&)> variable_read_expression;
@@ -90,40 +109,36 @@ namespace basically::ast
         std::function<void(PostfixExpressionPtr const&)> postfix_expression;
         std::function<void(FunctionCallExpressionPtr const&)> function_call_expression;
 
+        std::function<void(Expression const&)> default_handler;
+
         void operator ()(LiteralExpressionPtr const& expression)
         {
-            assert(literal_expression);
-            literal_expression(expression);
+            call_handler(expression, literal_expression, default_handler);
         }
 
         void operator ()(VariableReadExpressionPtr const& expression)
         {
-            assert(variable_read_expression);
-            variable_read_expression(expression);
+            call_handler(expression, variable_read_expression, default_handler);
         }
 
         void operator ()(PrefixExpressionPtr const& expression)
         {
-            assert(prefix_expression);
-            prefix_expression(expression);
+            call_handler(expression, prefix_expression, default_handler);
         }
 
         void operator ()(BinaryExpressionPtr const& expression)
         {
-            assert(binary_expression);
-            binary_expression(expression);
+            call_handler(expression, binary_expression, default_handler);
         }
 
         void operator ()(PostfixExpressionPtr const& expression)
         {
-            assert(postfix_expression);
-            postfix_expression(expression);
+            call_handler(expression, postfix_expression, default_handler);
         }
 
         void operator ()(FunctionCallExpressionPtr const& expression)
         {
-            assert(function_call_expression);
-            function_call_expression(expression);
+            call_handler(expression, function_call_expression, default_handler);
         }
     };
 
@@ -173,7 +188,7 @@ namespace basically::ast
     using StatementList = std::list<Statement>;
 
 
-    struct StatementHandler
+    struct StatementHandler : HandlerBase
     {
         std::function<void(DoStatementPtr const&)> do_statement;
         std::function<void(ForStatementPtr const&)> for_statement;
@@ -187,6 +202,69 @@ namespace basically::ast
         std::function<void(VariableDeclarationStatementPtr const&)> variable_declaration_statement;
         std::function<void(AssignmentStatementPtr const&)> assignment_statement;
         std::function<void(SubCallStatementPtr const&)> sub_call_statement;
+
+        std::function<void(Statement const&)> default_handler;
+
+
+        void operator ()(DoStatementPtr const& statement)
+        {
+            call_handler(statement, do_statement, default_handler);
+        }
+
+        void operator ()(ForStatementPtr const& statement)
+        {
+            call_handler(statement, for_statement, default_handler);
+        }
+
+        void operator ()(SubDeclarationStatementPtr const& statement)
+        {
+            call_handler(statement, sub_declaration_statement, default_handler);
+        }
+
+        void operator ()(FunctionDeclarationStatementPtr const& statement)
+        {
+            call_handler(statement, function_declaration_statement, default_handler);
+        }
+
+        void operator ()(IfStatementPtr const& statement)
+        {
+            call_handler(statement, if_statement, default_handler);
+        }
+
+        void operator ()(LoadStatementPtr const& statement)
+        {
+            call_handler(statement, load_statement, default_handler);
+        }
+
+        void operator ()(LoopStatementPtr const& statement)
+        {
+            call_handler(statement, loop_statement, default_handler);
+        }
+
+        void operator ()(SelectStatementPtr const& statement)
+        {
+            call_handler(statement, select_statement, default_handler);
+        }
+
+        void operator ()(StructureDeclarationStatementPtr const& statement)
+        {
+            call_handler(statement, structure_declaration_statement, default_handler);
+        }
+
+        void operator ()(VariableDeclarationStatementPtr const& statement)
+        {
+            call_handler(statement, variable_declaration_statement, default_handler);
+        }
+
+        void operator ()(AssignmentStatementPtr const& statement)
+        {
+            call_handler(statement, assignment_statement, default_handler);
+        }
+
+        void operator ()(SubCallStatementPtr const& statement)
+        {
+            call_handler(statement, sub_call_statement, default_handler);
+        }
     };
 
 
@@ -197,11 +275,11 @@ namespace basically::ast
     class LiteralExpression : public ExpressionBase
     {
         private:
-            token::Token value;
+            lexing::Token value;
 
         public:
             LiteralExpression() = default;
-            LiteralExpression(token::Token const& value);
+            LiteralExpression(lexing::Token const& value);
             LiteralExpression(LiteralExpression const& expression) = default;
             LiteralExpression(LiteralExpression&& expression) = default;
             ~LiteralExpression() override = default;
@@ -211,19 +289,19 @@ namespace basically::ast
             LiteralExpression& operator =(LiteralExpression&& expression) = default;
 
         public:
-            token::Token const& get_value() const noexcept;
+            lexing::Token const& get_value() const noexcept;
     };
 
 
     class VariableReadExpression : public ExpressionBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             Expression subscript;
 
         public:
             VariableReadExpression() = default;
-            VariableReadExpression(token::Token const& new_name,
+            VariableReadExpression(lexing::Token const& new_name,
                                    Expression const& new_subscript);
             VariableReadExpression(VariableReadExpression const& expression) = default;
             VariableReadExpression(VariableReadExpression&& expression) = default;
@@ -234,7 +312,7 @@ namespace basically::ast
             VariableReadExpression& operator =(VariableReadExpression&& expression) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             Expression const& get_subscript() const noexcept;
     };
 
@@ -242,12 +320,12 @@ namespace basically::ast
     class PrefixExpression : public ExpressionBase
     {
         private:
-            token::Token operator_type;
+            lexing::Token operator_type;
             Expression expression;
 
         public:
             PrefixExpression() = default;
-            PrefixExpression(token::Token const& new_operator_type,
+            PrefixExpression(lexing::Token const& new_operator_type,
                              Expression const& new_expression);
             PrefixExpression(PrefixExpression const& expression) = default;
             PrefixExpression(PrefixExpression&& expression) = default;
@@ -258,7 +336,7 @@ namespace basically::ast
             PrefixExpression& operator =(PrefixExpression&& expression) = default;
 
         public:
-            token::Token const& get_operator_type() const noexcept;
+            lexing::Token const& get_operator_type() const noexcept;
             Expression const& get_expression() const noexcept;
     };
 
@@ -266,13 +344,13 @@ namespace basically::ast
     class BinaryExpression : public ExpressionBase
     {
         private:
-            token::Token operator_type;
+            lexing::Token operator_type;
             Expression lhs;
             Expression rhs;
 
         public:
             BinaryExpression() = default;
-            BinaryExpression(token::Token const& new_operator_type,
+            BinaryExpression(lexing::Token const& new_operator_type,
                              Expression const& new_lhs,
                              Expression const& new_rhs);
             BinaryExpression(BinaryExpression const& expression) = default;
@@ -284,7 +362,7 @@ namespace basically::ast
             BinaryExpression& operator =(BinaryExpression&& expression) = default;
 
         public:
-            token::Token const& get_operator_type() const noexcept;
+            lexing::Token const& get_operator_type() const noexcept;
             Expression const& get_lhs() const noexcept;
             Expression const& get_rhs() const noexcept;
     };
@@ -294,12 +372,12 @@ namespace basically::ast
     {
         private:
             Expression expression;
-            token::Token operator_type;
+            lexing::Token operator_type;
 
         public:
             PostfixExpression() = default;
             PostfixExpression(Expression const& new_expression,
-                              token::Token const& new_operator_type);
+                              lexing::Token const& new_operator_type);
             PostfixExpression(PostfixExpression const& expression) = default;
             PostfixExpression(PostfixExpression&& expression) = default;
             ~PostfixExpression() override = default;
@@ -310,19 +388,19 @@ namespace basically::ast
 
         public:
             Expression const& get_expression() const noexcept;
-            token::Token const& get_operator_type() const noexcept;
+            lexing::Token const& get_operator_type() const noexcept;
     };
 
 
     class FunctionCallExpression : public ExpressionBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             ExpressionList parameters;
 
         public:
             FunctionCallExpression() = default;
-            FunctionCallExpression(token::Token const& new_name,
+            FunctionCallExpression(lexing::Token const& new_name,
                                    ExpressionList const& new_parameters);
             FunctionCallExpression(FunctionCallExpression const& expression) = default;
             FunctionCallExpression(FunctionCallExpression&& expression) = default;
@@ -333,7 +411,7 @@ namespace basically::ast
             FunctionCallExpression& operator =(FunctionCallExpression&& expression) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             ExpressionList const& get_parameters() const noexcept;
     };
 
@@ -341,14 +419,14 @@ namespace basically::ast
     class DoStatement : public StatementBase
     {
         private:
-            token::Token terminator;
+            lexing::Token terminator;
             Expression test;
             StatementList body;
 
         public:
             DoStatement() = default;
             DoStatement(source::Location const& new_location,
-                        token::Token const& new_terminator,
+                        lexing::Token const& new_terminator,
                         Expression const& new_test,
                         StatementList const& new_body);
             DoStatement(DoStatement const& statement) = default;
@@ -360,7 +438,7 @@ namespace basically::ast
             DoStatement& operator =(DoStatement&& statement) = default;
 
         public:
-            token::Token const& get_terminator() const noexcept;
+            lexing::Token const& get_terminator() const noexcept;
             Expression const& get_test() const noexcept;
             StatementList const& get_body() const noexcept;
     };
@@ -369,7 +447,7 @@ namespace basically::ast
     class ForStatement : public StatementBase
     {
         private:
-            token::Token index_name;
+            lexing::Token index_name;
             Expression start_index;
             Expression end_index;
             OptionalExpression step_value;
@@ -378,7 +456,7 @@ namespace basically::ast
         public:
             ForStatement() = default;
             ForStatement(source::Location const& new_location,
-                         token::Token const& new_index_name,
+                         lexing::Token const& new_index_name,
                          Expression const& new_start_index,
                          Expression const& new_end_index,
                          OptionalExpression const& new_step_value,
@@ -392,7 +470,7 @@ namespace basically::ast
             ForStatement& operator =(ForStatement&& statement) = default;
 
         public:
-            token::Token const& get_index_name() const noexcept;
+            lexing::Token const& get_index_name() const noexcept;
             Expression const& get_start_index() const noexcept;
             Expression const& get_end_index() const noexcept;
             OptionalExpression const& get_step_value() const noexcept;
@@ -403,14 +481,14 @@ namespace basically::ast
     class SubDeclarationStatement : public StatementBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             VariableDeclarationList parameters;
             StatementList body;
 
         public:
             SubDeclarationStatement() = default;
             SubDeclarationStatement(source::Location const& new_location,
-                                    token::Token const& name,
+                                    lexing::Token const& name,
                                     VariableDeclarationList const& parameters,
                                     StatementList const& body);
             SubDeclarationStatement(SubDeclarationStatement const& statement) = default;
@@ -422,7 +500,7 @@ namespace basically::ast
             SubDeclarationStatement& operator =(SubDeclarationStatement&& statement) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             VariableDeclarationList const& get_parameters() const noexcept;
             StatementList const& get_body() const noexcept;
     };
@@ -431,14 +509,14 @@ namespace basically::ast
     class FunctionDeclarationStatement : public SubDeclarationStatement
     {
         private:
-            token::Token return_type;
+            lexing::Token return_type;
 
         public:
             FunctionDeclarationStatement() = default;
             FunctionDeclarationStatement(source::Location const& new_location,
-                                         token::Token const& name,
+                                         lexing::Token const& name,
                                          VariableDeclarationList const& parameters,
-                                         token::Token const& return_type,
+                                         lexing::Token const& return_type,
                                          StatementList const& body);
             FunctionDeclarationStatement(FunctionDeclarationStatement const& statement) = default;
             FunctionDeclarationStatement(FunctionDeclarationStatement&& statement) = default;
@@ -449,7 +527,7 @@ namespace basically::ast
             FunctionDeclarationStatement& operator =(FunctionDeclarationStatement&& statement) = default;
 
         public:
-            token::Token const& get_return_type() const noexcept;
+            lexing::Token const& get_return_type() const noexcept;
     };
 
 
@@ -484,12 +562,12 @@ namespace basically::ast
     class LoadStatement : public StatementBase
     {
         private:
-            token::Token module_name;
+            lexing::Token module_name;
 
         public:
             LoadStatement() = default;
             LoadStatement(source::Location const& new_location,
-                          token::Token new_module_name);
+                          lexing::Token new_module_name);
             LoadStatement(LoadStatement const& statement) = default;
             LoadStatement(LoadStatement&& statement) = default;
             ~LoadStatement() override = default;
@@ -499,7 +577,7 @@ namespace basically::ast
             LoadStatement& operator =(LoadStatement&& statement) = default;
 
         public:
-            token::Token const& get_module_name() const noexcept;
+            lexing::Token const& get_module_name() const noexcept;
     };
 
 
@@ -556,13 +634,13 @@ namespace basically::ast
     class StructureDeclarationStatement : public StatementBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             VariableDeclarationList members;
 
         public:
             StructureDeclarationStatement() = default;
             StructureDeclarationStatement(source::Location const& new_location,
-                                          token::Token const& new_name,
+                                          lexing::Token const& new_name,
                                           VariableDeclarationList const& new_members);
             StructureDeclarationStatement(StructureDeclarationStatement const& statement) = default;
             StructureDeclarationStatement(StructureDeclarationStatement&& statement) = default;
@@ -573,7 +651,7 @@ namespace basically::ast
             StructureDeclarationStatement& operator =(StructureDeclarationStatement&& statement) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             VariableDeclarationList const& get_members() const noexcept;
     };
 
@@ -581,15 +659,15 @@ namespace basically::ast
     class VariableDeclarationStatement : public StatementBase
     {
         private:
-            token::Token name;
-            token::Token type_name;
+            lexing::Token name;
+            lexing::Token type_name;
             OptionalExpression initializer;
 
         public:
             VariableDeclarationStatement() = default;
             VariableDeclarationStatement(source::Location const& new_location,
-                                         token::Token const& new_name,
-                                         token::Token const& new_type_name,
+                                         lexing::Token const& new_name,
+                                         lexing::Token const& new_type_name,
                                          OptionalExpression const& new_initializer);
             VariableDeclarationStatement(VariableDeclarationStatement const& statement) = default;
             VariableDeclarationStatement(VariableDeclarationStatement&& statement) = default;
@@ -600,8 +678,8 @@ namespace basically::ast
             VariableDeclarationStatement& operator =(VariableDeclarationStatement&& statement) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
-            token::Token const& get_type_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
+            lexing::Token const& get_type_name() const noexcept;
             OptionalExpression const& get_initilizer() const noexcept;
     };
 
@@ -609,13 +687,13 @@ namespace basically::ast
     class AssignmentStatement : public StatementBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             Expression value;
 
         public:
             AssignmentStatement() = default;
             AssignmentStatement(source::Location const& new_location,
-                                token::Token const& new_name,
+                                lexing::Token const& new_name,
                                 Expression const& new_value);
             AssignmentStatement(AssignmentStatement const& statement) = default;
             AssignmentStatement(AssignmentStatement&& statement) = default;
@@ -626,7 +704,7 @@ namespace basically::ast
             AssignmentStatement& operator =(AssignmentStatement&& statement) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             Expression const& get_value() const noexcept;
     };
 
@@ -634,13 +712,13 @@ namespace basically::ast
     class SubCallStatement : public StatementBase
     {
         private:
-            token::Token name;
+            lexing::Token name;
             ExpressionList parameters;
 
         public:
             SubCallStatement() = default;
             SubCallStatement(source::Location const& new_location,
-                             token::Token const& new_name,
+                             lexing::Token const& new_name,
                              ExpressionList const& new_parameters);
             SubCallStatement(SubCallStatement const& statement) = default;
             SubCallStatement(SubCallStatement&& statement) = default;
@@ -651,7 +729,7 @@ namespace basically::ast
             SubCallStatement& operator =(SubCallStatement&& statement) = default;
 
         public:
-            token::Token const& get_name() const noexcept;
+            lexing::Token const& get_name() const noexcept;
             ExpressionList const& get_parameters() const noexcept;
     };
 

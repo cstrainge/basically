@@ -7,6 +7,7 @@ namespace basically::modules
 
 
     class Module;
+    class ModuleLoader;
 
     using ModulePtr = std::shared_ptr<Module>;
     using ModuleMap = std::unordered_map<std::string, ModulePtr>;
@@ -18,22 +19,26 @@ namespace basically::modules
     class Module
     {
         private:
+            std::string name;
+            std::fs::path base_path;
+
             ModuleMap loaded_modules;
 
             typing::TypeInfoMap types;
-
-            variables::InfoMap variables;
-
             typing::SubInfoMap subs;
             typing::FunctionInfoMap functions;
+
+            variables::InfoMap variables;
 
             ast::StatementList startup;
 
         public:
             Module() = default;
+            Module(std::string const& new_name,
+                   std::fs::path const& new_base_path,
+                   ast::StatementList const& new_code);
             Module(Module const& module) = delete;
             Module(Module&& module) = delete;
-            Module(ast::StatementList const& block);
             ~Module() = default;
 
         public:
@@ -43,8 +48,17 @@ namespace basically::modules
         public:
             int execute();
 
-        public:
-            void insert(typing::TypeInfoPtr const& item);
+            void insert(typing::TypeInfoPtr&& item);
+
+        private:
+            void process_statement(ast::Statement const& statement);
+
+            void add_sub(ast::SubDeclarationStatementPtr const& statement);
+            void add_function(ast::FunctionDeclarationStatementPtr const& statement);
+            void load_submodule(ast::LoadStatementPtr const& statement);
+            void add_structure(ast::StructureDeclarationStatementPtr const& statemnent);
+            void add_variable(ast::VariableDeclarationStatementPtr const& statement);
+
     };
 
 

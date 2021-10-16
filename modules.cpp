@@ -18,9 +18,9 @@ namespace basically::modules
                              typing::FloatingPointFlag is_floating_point,
                              size_t size)
         {
-           auto extra = std::make_shared<typing::NumberInfo>(is_signed,
-                                                             is_floating_point,
-                                                             size);
+            auto extra = std::make_shared<typing::NumberInfo>(is_signed,
+                                                              is_floating_point,
+                                                              size);
 
             module->insert(std::make_shared<typing::TypeInfo>(name,
                                                               extra,
@@ -67,8 +67,36 @@ namespace basically::modules
 
 
 
-    Module::Module(ast::StatementList const& block)
+    Module::Module(std::string const& new_name,
+                   std::fs::path const& new_base_path,
+                   ast::StatementList const& new_code)
+    : name(new_name),
+      base_path(new_base_path)
     {
+        auto bind = [&](auto method)
+            {
+                return std::bind(method, this, std::placeholders::_1);
+            };
+
+        auto handlers = ast::StatementHandler
+            {
+                .sub_declaration_statement       = bind(&Module::add_sub),
+                .function_declaration_statement  = bind(&Module::add_function),
+                .load_statement                  = bind(&Module::load_submodule),
+                .structure_declaration_statement = bind(&Module::add_structure),
+                .variable_declaration_statement  = bind(&Module::add_variable),
+
+                .default_handler =
+                    [&](auto statement)
+                    {
+                        startup.push_back(statement);
+                    }
+            };
+
+        for (auto const& statement : new_code)
+        {
+            std::visit(handlers, statement);
+        }
     }
 
 
@@ -78,9 +106,34 @@ namespace basically::modules
     }
 
 
-    void Module::insert(typing::TypeInfoPtr const& item)
+    void Module::insert(typing::TypeInfoPtr&& item)
     {
-        types[item->name] = item;
+        types.emplace(item->name, std::move(item));
+    }
+
+
+    void Module::add_sub(ast::SubDeclarationStatementPtr const& statement)
+    {
+    }
+
+
+    void Module::add_function(ast::FunctionDeclarationStatementPtr const& statement)
+    {
+    }
+
+
+    void Module::load_submodule(ast::LoadStatementPtr const& statement)
+    {
+    }
+
+
+    void Module::add_structure(ast::StructureDeclarationStatementPtr const& statemnent)
+    {
+    }
+
+
+    void Module::add_variable(ast::VariableDeclarationStatementPtr const& statement)
+    {
     }
 
 
@@ -175,15 +228,16 @@ namespace basically::modules
 
         auto module_path = found_path.value();
         auto source_buffer = source::Buffer(module_path);
-        auto token_buffer = token::Buffer(source_buffer);
+        auto token_buffer = lexing::Buffer(source_buffer);
 
         std::cout << "Loading module " << name
                   << " from " << module_path << "."
                   << std::endl;
 
 
-        auto ast = parse::parse_to_ast(token_buffer);
-        auto new_module = std::make_shared<Module>(ast);
+        auto ast = parsing::parse_to_ast(token_buffer);
+        auto name_without_extension = without_extension(name);
+        auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast);
 
         loaded_modules.insert({ without_extension(name), new_module });
 
