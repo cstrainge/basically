@@ -39,9 +39,6 @@ source.o: source.cpp $(pch)
 lexing.o: lexing.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
-ast.o: ast.cpp $(pch)
-	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
-
 parsing.o: parsing.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
