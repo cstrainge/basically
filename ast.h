@@ -6,51 +6,24 @@ namespace basically::ast
 {
 
 
-   class Base
+   struct Base
     {
-        private:
-            source::Location location;
+        const source::Location location;
 
-        public:
-            Base(source::Location const& new_location);
-            Base(Base const& ast) = default;
-            Base(Base&& ast) = default;
-            virtual ~Base() = default;
-
-        public:
-            Base& operator =(Base const& ast) = default;
-            Base& operator =(Base&& ast) = default;
-
-        public:
-            source::Location const& get_loctation() const noexcept;
+        Base(source::Location const& new_location);
+        virtual ~Base() = default;
     };
 
 
-    class ExpressionBase : public Base
+    struct ExpressionBase : public Base
     {
-        public:
-            ExpressionBase(source::Location const& new_location);
-            ExpressionBase(ExpressionBase const& expression) = default;
-            ExpressionBase(ExpressionBase&& expression) = default;
-            ~ExpressionBase() override = default;
-
-        public:
-            ExpressionBase& operator =(ExpressionBase const& expression) = default;
-            ExpressionBase& operator =(ExpressionBase&& expression) = default;
+        ExpressionBase(source::Location const& new_location);
     };
 
 
-    class StatementBase : public Base
+    struct StatementBase : public Base
     {
-        public:
-            StatementBase(source::Location const& new_location);
-            StatementBase(StatementBase const& statement) = default;
-            StatementBase(StatementBase&& statement) = default;
-            ~StatementBase() override = default;
-
-        public:
-            StatementBase& operator =(StatementBase const& statement) = default;
-            StatementBase& operator =(StatementBase&& statement) = default;
+        StatementBase(source::Location const& new_location);
     };
 
 
@@ -73,12 +46,12 @@ namespace basically::ast
     };
 
 
-    class LiteralExpression;
-    class VariableReadExpression;
-    class PrefixExpression;
-    class BinaryExpression;
-    class PostfixExpression;
-    class FunctionCallExpression;
+    struct LiteralExpression;
+    struct VariableReadExpression;
+    struct PrefixExpression;
+    struct BinaryExpression;
+    struct PostfixExpression;
+    struct FunctionCallExpression;
 
     using LiteralExpressionPtr = std::shared_ptr<LiteralExpression>;
     using VariableReadExpressionPtr = std::shared_ptr<VariableReadExpression>;
@@ -143,18 +116,18 @@ namespace basically::ast
     };
 
 
-    class DoStatement;
-    class ForStatement;
-    class SubDeclarationStatement;
-    class FunctionDeclarationStatement;
-    class IfStatement;
-    class LoadStatement;
-    class LoopStatement;
-    class SelectStatement;
-    class StructureDeclarationStatement;
-    class VariableDeclarationStatement;
-    class AssignmentStatement;
-    class SubCallStatement;
+    struct DoStatement;
+    struct ForStatement;
+    struct SubDeclarationStatement;
+    struct FunctionDeclarationStatement;
+    struct IfStatement;
+    struct LoadStatement;
+    struct LoopStatement;
+    struct SelectStatement;
+    struct StructureDeclarationStatement;
+    struct VariableDeclarationStatement;
+    struct AssignmentStatement;
+    struct SubCallStatement;
 
     using DoStatementPtr = std::shared_ptr<DoStatement>;
     using ForStatementPtr = std::shared_ptr<ForStatement>;
@@ -272,465 +245,210 @@ namespace basically::ast
     using ConditionalBlockList = std::list<ConditionalBlock>;
 
 
-    class LiteralExpression : public ExpressionBase
+    struct LiteralExpression : public ExpressionBase
     {
-        private:
-            lexing::Token value;
+        const lexing::Token value;
 
-        public:
-            LiteralExpression() = default;
-            LiteralExpression(lexing::Token const& value);
-            LiteralExpression(LiteralExpression const& expression) = default;
-            LiteralExpression(LiteralExpression&& expression) = default;
-            ~LiteralExpression() override = default;
-
-        public:
-            LiteralExpression& operator =(LiteralExpression const& expression) = default;
-            LiteralExpression& operator =(LiteralExpression&& expression) = default;
-
-        public:
-            lexing::Token const& get_value() const noexcept;
+        LiteralExpression(lexing::Token const& value);
     };
 
 
-    class VariableReadExpression : public ExpressionBase
+    struct VariableReadExpression : public ExpressionBase
     {
-        private:
-            lexing::Token name;
-            Expression subscript;
+        const lexing::Token name;
+        const Expression subscript;
 
-        public:
-            VariableReadExpression() = default;
-            VariableReadExpression(lexing::Token const& new_name,
-                                   Expression const& new_subscript);
-            VariableReadExpression(VariableReadExpression const& expression) = default;
-            VariableReadExpression(VariableReadExpression&& expression) = default;
-            ~VariableReadExpression() override = default;
-
-        public:
-            VariableReadExpression& operator =(VariableReadExpression const& expression) = default;
-            VariableReadExpression& operator =(VariableReadExpression&& expression) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            Expression const& get_subscript() const noexcept;
+        VariableReadExpression(lexing::Token const& new_name,
+                               Expression const& new_subscript);
     };
 
 
-    class PrefixExpression : public ExpressionBase
+    struct PrefixExpression : public ExpressionBase
     {
-        private:
-            lexing::Token operator_type;
-            Expression expression;
+        const lexing::Token operator_type;
+        const Expression expression;
 
-        public:
-            PrefixExpression() = default;
-            PrefixExpression(lexing::Token const& new_operator_type,
-                             Expression const& new_expression);
-            PrefixExpression(PrefixExpression const& expression) = default;
-            PrefixExpression(PrefixExpression&& expression) = default;
-            ~PrefixExpression() override = default;
-
-        public:
-            PrefixExpression& operator =(PrefixExpression const& expression) = default;
-            PrefixExpression& operator =(PrefixExpression&& expression) = default;
-
-        public:
-            lexing::Token const& get_operator_type() const noexcept;
-            Expression const& get_expression() const noexcept;
+        PrefixExpression(lexing::Token const& new_operator_type,
+                         Expression const& new_expression);
     };
 
 
-    class BinaryExpression : public ExpressionBase
+    struct BinaryExpression : public ExpressionBase
     {
-        private:
-            lexing::Token operator_type;
-            Expression lhs;
-            Expression rhs;
+        const lexing::Token operator_type;
+        const Expression lhs;
+        const Expression rhs;
 
-        public:
-            BinaryExpression() = default;
-            BinaryExpression(lexing::Token const& new_operator_type,
-                             Expression const& new_lhs,
-                             Expression const& new_rhs);
-            BinaryExpression(BinaryExpression const& expression) = default;
-            BinaryExpression(BinaryExpression&& expression) = default;
-            ~BinaryExpression() override = default;
-
-        public:
-            BinaryExpression& operator =(BinaryExpression const& expression) = default;
-            BinaryExpression& operator =(BinaryExpression&& expression) = default;
-
-        public:
-            lexing::Token const& get_operator_type() const noexcept;
-            Expression const& get_lhs() const noexcept;
-            Expression const& get_rhs() const noexcept;
+        BinaryExpression(lexing::Token const& new_operator_type,
+                         Expression const& new_lhs,
+                         Expression const& new_rhs);
     };
 
 
-    class PostfixExpression : public ExpressionBase
+    struct PostfixExpression : public ExpressionBase
     {
-        private:
-            Expression expression;
-            lexing::Token operator_type;
+        const Expression expression;
+        const lexing::Token operator_type;
 
-        public:
-            PostfixExpression() = default;
-            PostfixExpression(Expression const& new_expression,
-                              lexing::Token const& new_operator_type);
-            PostfixExpression(PostfixExpression const& expression) = default;
-            PostfixExpression(PostfixExpression&& expression) = default;
-            ~PostfixExpression() override = default;
-
-        public:
-            PostfixExpression& operator =(PostfixExpression const& expression) = default;
-            PostfixExpression& operator =(PostfixExpression&& expression) = default;
-
-        public:
-            Expression const& get_expression() const noexcept;
-            lexing::Token const& get_operator_type() const noexcept;
+        PostfixExpression(Expression const& new_expression,
+                          lexing::Token const& new_operator_type);
     };
 
 
-    class FunctionCallExpression : public ExpressionBase
+    struct FunctionCallExpression : public ExpressionBase
     {
-        private:
-            lexing::Token name;
-            ExpressionList parameters;
+        const lexing::Token name;
+        const ExpressionList parameters;
 
-        public:
-            FunctionCallExpression() = default;
-            FunctionCallExpression(lexing::Token const& new_name,
-                                   ExpressionList const& new_parameters);
-            FunctionCallExpression(FunctionCallExpression const& expression) = default;
-            FunctionCallExpression(FunctionCallExpression&& expression) = default;
-            ~FunctionCallExpression() override = default;
-
-        public:
-            FunctionCallExpression& operator =(FunctionCallExpression const& expression) = default;
-            FunctionCallExpression& operator =(FunctionCallExpression&& expression) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            ExpressionList const& get_parameters() const noexcept;
+        FunctionCallExpression(lexing::Token const& new_name,
+                               ExpressionList const& new_parameters);
     };
 
 
-    class DoStatement : public StatementBase
+    struct DoStatement : public StatementBase
     {
-        private:
-            lexing::Token terminator;
-            Expression test;
-            StatementList body;
+        const lexing::Token terminator;
+        const Expression test;
+        const StatementList body;
 
-        public:
-            DoStatement() = default;
-            DoStatement(source::Location const& new_location,
-                        lexing::Token const& new_terminator,
-                        Expression const& new_test,
+        DoStatement(source::Location const& new_location,
+                    lexing::Token const& new_terminator,
+                    Expression const& new_test,
+                    StatementList const& new_body);
+    };
+
+
+    struct ForStatement : public StatementBase
+    {
+        const lexing::Token index_name;
+        const Expression start_index;
+        const Expression end_index;
+        const OptionalExpression step_value;
+        const StatementList body;
+
+        ForStatement(source::Location const& new_location,
+                        lexing::Token const& new_index_name,
+                        Expression const& new_start_index,
+                        Expression const& new_end_index,
+                        OptionalExpression const& new_step_value,
                         StatementList const& new_body);
-            DoStatement(DoStatement const& statement) = default;
-            DoStatement(DoStatement&& statement) = default;
-            ~DoStatement() override = default;
-
-        public:
-            DoStatement& operator =(DoStatement const& statement) = default;
-            DoStatement& operator =(DoStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_terminator() const noexcept;
-            Expression const& get_test() const noexcept;
-            StatementList const& get_body() const noexcept;
     };
 
 
-    class ForStatement : public StatementBase
+    struct SubDeclarationStatement : public StatementBase
     {
-        private:
-            lexing::Token index_name;
-            Expression start_index;
-            Expression end_index;
-            OptionalExpression step_value;
-            StatementList body;
+        const lexing::Token name;
+        const VariableDeclarationList parameters;
+        const StatementList body;
 
-        public:
-            ForStatement() = default;
-            ForStatement(source::Location const& new_location,
-                         lexing::Token const& new_index_name,
-                         Expression const& new_start_index,
-                         Expression const& new_end_index,
-                         OptionalExpression const& new_step_value,
-                         StatementList const& new_body);
-            ForStatement(ForStatement const& statement) = default;
-            ForStatement(ForStatement&& statement) = default;
-            ~ForStatement() override = default;
-
-        public:
-            ForStatement& operator =(ForStatement const& statement) = default;
-            ForStatement& operator =(ForStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_index_name() const noexcept;
-            Expression const& get_start_index() const noexcept;
-            Expression const& get_end_index() const noexcept;
-            OptionalExpression const& get_step_value() const noexcept;
-            StatementList const& get_body() const noexcept;
+        SubDeclarationStatement(source::Location const& new_location,
+                                lexing::Token const& name,
+                                VariableDeclarationList const& parameters,
+                                StatementList const& body);
     };
 
 
-    class SubDeclarationStatement : public StatementBase
+    struct FunctionDeclarationStatement : public SubDeclarationStatement
     {
-        private:
-            lexing::Token name;
-            VariableDeclarationList parameters;
-            StatementList body;
+        const lexing::Token return_type;
 
-        public:
-            SubDeclarationStatement() = default;
-            SubDeclarationStatement(source::Location const& new_location,
-                                    lexing::Token const& name,
-                                    VariableDeclarationList const& parameters,
-                                    StatementList const& body);
-            SubDeclarationStatement(SubDeclarationStatement const& statement) = default;
-            SubDeclarationStatement(SubDeclarationStatement&& statement) = default;
-            ~SubDeclarationStatement() override = default;
-
-        public:
-            SubDeclarationStatement& operator =(SubDeclarationStatement const& statement) = default;
-            SubDeclarationStatement& operator =(SubDeclarationStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            VariableDeclarationList const& get_parameters() const noexcept;
-            StatementList const& get_body() const noexcept;
+        FunctionDeclarationStatement(source::Location const& new_location,
+                                        lexing::Token const& name,
+                                        VariableDeclarationList const& parameters,
+                                        lexing::Token const& return_type,
+                                        StatementList const& body);
     };
 
 
-    class FunctionDeclarationStatement : public SubDeclarationStatement
+    struct IfStatement : public StatementBase
     {
-        private:
-            lexing::Token return_type;
+        const ConditionalBlock main_block;
+        const ConditionalBlockList else_if_blocks;
+        const StatementList else_block;
 
-        public:
-            FunctionDeclarationStatement() = default;
-            FunctionDeclarationStatement(source::Location const& new_location,
-                                         lexing::Token const& name,
-                                         VariableDeclarationList const& parameters,
-                                         lexing::Token const& return_type,
-                                         StatementList const& body);
-            FunctionDeclarationStatement(FunctionDeclarationStatement const& statement) = default;
-            FunctionDeclarationStatement(FunctionDeclarationStatement&& statement) = default;
-            ~FunctionDeclarationStatement() override = default;
-
-        public:
-            FunctionDeclarationStatement& operator =(FunctionDeclarationStatement const& statement) = default;
-            FunctionDeclarationStatement& operator =(FunctionDeclarationStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_return_type() const noexcept;
+        IfStatement(source::Location const& new_location,
+                    ConditionalBlock const& new_main_block,
+                    ConditionalBlockList const& new_else_if_blocks,
+                    StatementList const& new_else_block);
     };
 
 
-    class IfStatement : public StatementBase
+    struct LoadStatement : public StatementBase
     {
-        private:
-            ConditionalBlock main_block;
-            ConditionalBlockList else_if_blocks;
-            StatementList else_block;
+        const lexing::Token module_name;
+        const lexing::Token alias;
 
-        public:
-            IfStatement() = default;
-            IfStatement(source::Location const& new_location,
-                        ConditionalBlock const& new_main_block,
-                        ConditionalBlockList const& new_else_if_blocks,
-                        StatementList const& new_else_block);
-            IfStatement(IfStatement const& statement) = default;
-            IfStatement(IfStatement&& statement) = default;
-            ~IfStatement() override = default;
-
-        public:
-            IfStatement& operator =(IfStatement const& statement) = default;
-            IfStatement& operator =(IfStatement&& statement) = default;
-
-        public:
-            ConditionalBlock const& get_main_block() const noexcept;
-            ConditionalBlockList const& get_else_if_blocks() const noexcept;
-            StatementList const& get_else_block() const noexcept;
+        LoadStatement(source::Location const& new_location,
+                      lexing::Token const& new_module_name,
+                      lexing::Token const& new_alias);
     };
 
 
-    class LoadStatement : public StatementBase
+    struct LoopStatement : public StatementBase
     {
-        private:
-            lexing::Token module_name;
+        const StatementList body;
 
-        public:
-            LoadStatement() = default;
-            LoadStatement(source::Location const& new_location,
-                          lexing::Token new_module_name);
-            LoadStatement(LoadStatement const& statement) = default;
-            LoadStatement(LoadStatement&& statement) = default;
-            ~LoadStatement() override = default;
-
-        public:
-            LoadStatement& operator =(LoadStatement const& statement) = default;
-            LoadStatement& operator =(LoadStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_module_name() const noexcept;
+        LoopStatement(source::Location const& new_location,
+                      StatementList const& new_body);
     };
 
 
-    class LoopStatement : public StatementBase
+    struct SelectStatement : public StatementBase
     {
-        private:
-            StatementList body;
+        const Expression test;
+        const ConditionalBlockList conditions;
+        const StatementList default_condition;
 
-        public:
-            LoopStatement() = default;
-            LoopStatement(source::Location const& new_location,
-                          StatementList const& new_body);
-            LoopStatement(LoopStatement const& statement) = default;
-            LoopStatement(LoopStatement&& statement) = default;
-            ~LoopStatement() override = default;
-
-        public:
-            LoopStatement& operator =(LoopStatement const& statement) = default;
-            LoopStatement& operator =(LoopStatement&& statement) = default;
-
-        public:
-            StatementList const& get_body() const noexcept;
+        SelectStatement(source::Location const& new_location,
+                        Expression const& new_test,
+                        ConditionalBlockList const& new_conditions,
+                        StatementList const& new_default_condition);
     };
 
 
-    class SelectStatement : public StatementBase
+    struct StructureDeclarationStatement : public StatementBase
     {
-        private:
-            Expression test;
-            ConditionalBlockList conditions;
-            StatementList default_condition;
+        const lexing::Token name;
+        const VariableDeclarationList members;
 
-        public:
-            SelectStatement() = default;
-            SelectStatement(source::Location const& new_location,
-                            Expression const& new_test,
-                            ConditionalBlockList const& new_conditions,
-                            StatementList const& new_default_condition);
-            SelectStatement(SelectStatement const& statement) = default;
-            SelectStatement(SelectStatement&& statement) = default;
-            ~SelectStatement() override = default;
-
-        public:
-            SelectStatement& operator =(SelectStatement const& statement) = default;
-            SelectStatement& operator =(SelectStatement&& statement) = default;
-
-        public:
-            Expression const& get_test() const noexcept;
-            ConditionalBlockList const& get_conditions() const noexcept;
-            StatementList const& get_default_condition() const noexcept;
+        StructureDeclarationStatement(source::Location const& new_location,
+                                      lexing::Token const& new_name,
+                                      VariableDeclarationList const& new_members);
     };
 
 
-    class StructureDeclarationStatement : public StatementBase
+    struct VariableDeclarationStatement : public StatementBase
     {
-        private:
-            lexing::Token name;
-            VariableDeclarationList members;
+        const lexing::Token name;
+        const lexing::Token type_name;
+        const OptionalExpression initializer;
 
-        public:
-            StructureDeclarationStatement() = default;
-            StructureDeclarationStatement(source::Location const& new_location,
-                                          lexing::Token const& new_name,
-                                          VariableDeclarationList const& new_members);
-            StructureDeclarationStatement(StructureDeclarationStatement const& statement) = default;
-            StructureDeclarationStatement(StructureDeclarationStatement&& statement) = default;
-            ~StructureDeclarationStatement() override = default;
-
-        public:
-            StructureDeclarationStatement& operator =(StructureDeclarationStatement const& statement) = default;
-            StructureDeclarationStatement& operator =(StructureDeclarationStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            VariableDeclarationList const& get_members() const noexcept;
+        VariableDeclarationStatement(source::Location const& new_location,
+                                     lexing::Token const& new_name,
+                                     lexing::Token const& new_type_name,
+                                     OptionalExpression const& new_initializer);
     };
 
 
-    class VariableDeclarationStatement : public StatementBase
+    struct AssignmentStatement : public StatementBase
     {
-        private:
-            lexing::Token name;
-            lexing::Token type_name;
-            OptionalExpression initializer;
+        const lexing::Token name;
+        const Expression value;
 
-        public:
-            VariableDeclarationStatement() = default;
-            VariableDeclarationStatement(source::Location const& new_location,
-                                         lexing::Token const& new_name,
-                                         lexing::Token const& new_type_name,
-                                         OptionalExpression const& new_initializer);
-            VariableDeclarationStatement(VariableDeclarationStatement const& statement) = default;
-            VariableDeclarationStatement(VariableDeclarationStatement&& statement) = default;
-            ~VariableDeclarationStatement() override = default;
-
-        public:
-            VariableDeclarationStatement& operator =(VariableDeclarationStatement const& statement) = default;
-            VariableDeclarationStatement& operator =(VariableDeclarationStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            lexing::Token const& get_type_name() const noexcept;
-            OptionalExpression const& get_initilizer() const noexcept;
+        AssignmentStatement(source::Location const& new_location,
+                            lexing::Token const& new_name,
+                            Expression const& new_value);
     };
 
 
-    class AssignmentStatement : public StatementBase
+    struct SubCallStatement : public StatementBase
     {
-        private:
-            lexing::Token name;
-            Expression value;
+        const lexing::Token name;
+        const ExpressionList parameters;
 
-        public:
-            AssignmentStatement() = default;
-            AssignmentStatement(source::Location const& new_location,
-                                lexing::Token const& new_name,
-                                Expression const& new_value);
-            AssignmentStatement(AssignmentStatement const& statement) = default;
-            AssignmentStatement(AssignmentStatement&& statement) = default;
-            ~AssignmentStatement() override = default;
-
-        public:
-            AssignmentStatement& operator =(AssignmentStatement const& statement) = default;
-            AssignmentStatement& operator =(AssignmentStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            Expression const& get_value() const noexcept;
-    };
-
-
-    class SubCallStatement : public StatementBase
-    {
-        private:
-            lexing::Token name;
-            ExpressionList parameters;
-
-        public:
-            SubCallStatement() = default;
-            SubCallStatement(source::Location const& new_location,
-                             lexing::Token const& new_name,
-                             ExpressionList const& new_parameters);
-            SubCallStatement(SubCallStatement const& statement) = default;
-            SubCallStatement(SubCallStatement&& statement) = default;
-            ~SubCallStatement() override = default;
-
-        public:
-            SubCallStatement& operator =(SubCallStatement const& statement) = default;
-            SubCallStatement& operator =(SubCallStatement&& statement) = default;
-
-        public:
-            lexing::Token const& get_name() const noexcept;
-            ExpressionList const& get_parameters() const noexcept;
+        SubCallStatement(source::Location const& new_location,
+                            lexing::Token const& new_name,
+                            ExpressionList const& new_parameters);
     };
 
 

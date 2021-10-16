@@ -195,6 +195,12 @@ namespace basically::parsing
         }
 
 
+        bool found_as(lexing::Buffer& buffer)
+        {
+            return found_optional_token(buffer, lexing::Type::KeywordAs);
+        }
+
+
         bool found_assign(lexing::Buffer& buffer)
         {
             return found_optional_token(buffer, lexing::Type::SymbolAssign);
@@ -619,8 +625,10 @@ namespace basically::parsing
 
         ast::Statement parse_load_statement(lexing::Buffer& buffer, lexing::Token& load_token)
         {
-            return std::make_shared<ast::LoadStatement>(load_token.location,
-                                                        expect_identifier(buffer));
+            auto name = expect_identifier(buffer);
+            auto alias = found_as(buffer) ? expect_identifier(buffer) : lexing::Token {};
+
+            return std::make_shared<ast::LoadStatement>(load_token.location, name, alias);
         }
 
 
