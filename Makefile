@@ -1,10 +1,10 @@
 
 CXX = g++-10
 
-sources = source.cpp lexing.cpp ast.cpp parsing.cpp typing.cpp variables.cpp modules.cpp \
+sources = source.cpp lexing.cpp parsing.cpp typing.cpp variables.cpp modules.cpp \
           basically.cpp
 objects = $(sources:.cpp=.o)
-headers = $(sources:.cpp=.h)
+headers = ast.h $(sources:.cpp=.h)
 
 executable = basically
 
