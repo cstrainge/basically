@@ -1,10 +1,8 @@
 
-#include <unistd.h>
-
 #include "basically.h"
 
 
-namespace basically::modules
+namespace basically::runtime::modules
 {
 
 
@@ -56,6 +54,13 @@ namespace basically::modules
         }
 
 
+        template <typename DataType>
+        auto bind(Module* module, DataType handler)
+        {
+            return std::bind(handler, module, std::placeholders::_1);
+        }
+
+
     }
 
 
@@ -66,37 +71,15 @@ namespace basically::modules
     }
 
 
-
     Module::Module(std::string const& new_name,
                    std::fs::path const& new_base_path,
-                   ast::StatementList const& new_code)
+                   ast::StatementList const& new_code,
+                   Loader& loader)
     : name(new_name),
       base_path(new_base_path)
     {
-        auto bind = [&](auto method)
-            {
-                return std::bind(method, this, std::placeholders::_1);
-            };
-
-        auto handlers = ast::StatementHandler
-            {
-                .sub_declaration_statement       = bind(&Module::add_sub),
-                .function_declaration_statement  = bind(&Module::add_function),
-                .load_statement                  = bind(&Module::load_submodule),
-                .structure_declaration_statement = bind(&Module::add_structure),
-                .variable_declaration_statement  = bind(&Module::add_variable),
-
-                .default_handler =
-                    [&](auto statement)
-                    {
-                        startup.push_back(statement);
-                    }
-            };
-
-        for (auto const& statement : new_code)
-        {
-            std::visit(handlers, statement);
-        }
+        process_passs_1(new_code, loader);
+        process_passs_2();
     }
 
 
@@ -106,9 +89,42 @@ namespace basically::modules
     }
 
 
-    void Module::insert(typing::TypeInfoPtr&& item)
+    void Module::process_passs_1(ast::StatementList const& ast, Loader& loader)
     {
-        types.emplace(item->name, std::move(item));
+        auto load_handler = [&](auto statement)
+            {
+                load_submodule(statement, loader);
+            };
+
+        auto statement_handlers = ast::StatementHandlers
+            {
+                .sub_declaration_statement       = bind(this, &Module::add_sub),
+                .function_declaration_statement  = bind(this, &Module::add_function),
+                .load_statement                  = load_handler,
+                .structure_declaration_statement = bind(this, &Module::add_structure),
+                .variable_declaration_statement  = bind(this, &Module::add_variable),
+
+                .default_handler =
+                    [&](auto statement)
+                    {
+                        startup.push_back(statement);
+                    }
+            };
+
+        for (auto const& statement : ast)
+        {
+            std::visit(statement_handlers, statement);
+        }
+    }
+
+
+    void Module::process_passs_2()
+    {
+    }
+
+
+    void Module::load_submodule(ast::LoadStatementPtr const& statement, Loader& loader)
+    {
     }
 
 
@@ -118,11 +134,6 @@ namespace basically::modules
 
 
     void Module::add_function(ast::FunctionDeclarationStatementPtr const& statement)
-    {
-    }
-
-
-    void Module::load_submodule(ast::LoadStatementPtr const& statement)
     {
     }
 
@@ -230,14 +241,14 @@ namespace basically::modules
         auto source_buffer = source::Buffer(module_path);
         auto token_buffer = lexing::Buffer(source_buffer);
 
-        std::cout << "Loading module " << name
+        auto ast = parsing::parse_to_ast(token_buffer);
+        auto name_without_extension = without_extension(name);
+
+        std::cout << "Loading module " << name_without_extension
                   << " from " << module_path << "."
                   << std::endl;
 
-
-        auto ast = parsing::parse_to_ast(token_buffer);
-        auto name_without_extension = without_extension(name);
-        auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast);
+        auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast, *this);
 
         loaded_modules.insert({ without_extension(name), new_module });
 
@@ -307,6 +318,12 @@ namespace basically::modules
     bool Loader::is_readable(std::fs::path const& path) const noexcept
     {
         return access(path.c_str(), R_OK) != -1;
+    }
+
+
+    void Module::insert(typing::TypeInfoPtr&& item)
+    {
+        types.emplace(item->name, std::move(item));
     }
 
 

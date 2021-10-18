@@ -2,12 +2,12 @@
 #pragma once
 
 
-namespace basically::modules
+namespace basically::runtime::modules
 {
 
 
     class Module;
-    class ModuleLoader;
+    class Loader;
 
     using ModulePtr = std::shared_ptr<Module>;
     using ModuleMap = std::unordered_map<std::string, ModulePtr>;
@@ -36,7 +36,8 @@ namespace basically::modules
             Module() = default;
             Module(std::string const& new_name,
                    std::fs::path const& new_base_path,
-                   ast::StatementList const& new_code);
+                   ast::StatementList const& new_code,
+                   Loader& loader);
             Module(Module const& module) = delete;
             Module(Module&& module) = delete;
             ~Module() = default;
@@ -48,17 +49,19 @@ namespace basically::modules
         public:
             int execute();
 
-            void insert(typing::TypeInfoPtr&& item);
-
         private:
-            void process_statement(ast::Statement const& statement);
+            void process_passs_1(ast::StatementList const& ast, Loader& loader);
+            void process_passs_2();
+
+            void load_submodule(ast::LoadStatementPtr const& statement, Loader& loader);
 
             void add_sub(ast::SubDeclarationStatementPtr const& statement);
             void add_function(ast::FunctionDeclarationStatementPtr const& statement);
-            void load_submodule(ast::LoadStatementPtr const& statement);
             void add_structure(ast::StructureDeclarationStatementPtr const& statemnent);
             void add_variable(ast::VariableDeclarationStatementPtr const& statement);
 
+        public:
+            void insert(typing::TypeInfoPtr&& item);
     };
 
 

@@ -1,10 +1,12 @@
 
 CXX = g++-10
 
-sources = source.cpp lexing.cpp parsing.cpp typing.cpp variables.cpp modules.cpp \
-          basically.cpp
+sources = source.cpp lexing.cpp parsing.cpp ast.cpp typing.cpp runtime.cpp runtime_variables.cpp \
+          runtime_modules.cpp basically.cpp
+
 objects = $(sources:.cpp=.o)
-headers = ast.h $(sources:.cpp=.h)
+
+headers = $(sources:.cpp=.h)
 
 executable = basically
 
@@ -42,13 +44,19 @@ lexing.o: lexing.cpp $(pch)
 parsing.o: parsing.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
+ast.o: ast.cpp $(pch)
+	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
+
 typing.o: typing.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
-variables.o: variables.cpp $(pch)
+runtime.o: runtime.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
-modules.o: modules.cpp $(pch)
+runtime_variables.o: runtime_variables.cpp $(pch)
+	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
+
+runtime_modules.o: runtime_modules.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
 basically.o: basically.cpp $(pch)

@@ -36,12 +36,7 @@ int main(int argc, char* argv[])
             throw std::runtime_error("Need to specifiy a script to run.");
         }
 
-        basically::modules::Loader loader;
-
-        loader.set_system_path(get_system_path(argv[0]));
-        auto script = loader.get_script(argv[1]);
-
-        result = script->execute();
+        result = basically::execute_script(get_system_path(argv[0]), argv[1]);
     }
     catch (std::exception& e)
     {

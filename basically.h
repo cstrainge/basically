@@ -23,21 +23,31 @@
     #include <filesystem>
     #include <cassert>
 
+    #include <unistd.h>
     #include <libgccjit.h>
 
 
     namespace std
     {
+
+
         namespace fs = filesystem;
+
+
     }
 
 
-    using OptionalChar = std::optional<char>;
-    using OptionalString = std::optional<std::string>;
-    using OptionalSize = std::optional<size_t>;
-    using OptionalPath = std::optional<std::fs::path>;
+    namespace basically
+    {
 
-    using CompoundName = std::vector<std::string>;
+
+        using OptionalChar = std::optional<char>;
+        using OptionalString = std::optional<std::string>;
+        using OptionalSize = std::optional<size_t>;
+        using OptionalPath = std::optional<std::fs::path>;
+
+
+    }
 
 
     #include "source.h"
@@ -45,8 +55,30 @@
     #include "ast.h"
     #include "parsing.h"
     #include "typing.h"
-    #include "variables.h"
-    #include "modules.h"
+    #include "runtime.h"
+    #include "runtime_variables.h"
+    #include "runtime_modules.h"
+
+
+    namespace basically
+    {
+
+        inline int execute_script(std::fs::path const& system_path,
+                                  std::fs::path const& script_path)
+        {
+            runtime::modules::Loader loader;
+
+            loader.set_system_path(system_path);
+
+            //auto script_path = std::fs::canonical(script.is_relative() ? std::fs::absolute(script)
+            //                                                           : script);
+
+            auto loaded_script = loader.get_script(script_path);
+            return loaded_script->execute();
+
+        }
+
+    }
 
 
 #endif

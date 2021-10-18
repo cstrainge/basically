@@ -37,31 +37,13 @@ namespace basically::ast
     };
 
 
-    struct HandlerBase
-    {
-        protected:
-            template <typename DataType, typename HandlerType, typename DefaultHandlerType>
-            void call_handler(DataType const& object,
-                              HandlerType& handler,
-                              DefaultHandlerType default_handler)
-            {
-                if (!handler)
-                {
-                    assert(default_handler);
-                    default_handler(object);
-                }
-
-                handler(object);
-            }
-    };
-
-
     struct LiteralExpression;
     struct VariableReadExpression;
     struct PrefixExpression;
     struct BinaryExpression;
     struct PostfixExpression;
     struct FunctionCallExpression;
+
 
     using LiteralExpressionPtr = std::shared_ptr<LiteralExpression>;
     using VariableReadExpressionPtr = std::shared_ptr<VariableReadExpression>;
@@ -78,52 +60,21 @@ namespace basically::ast
                                     PostfixExpressionPtr,
                                     FunctionCallExpressionPtr>;
 
+
     using OptionalExpression = std::optional<Expression>;
 
+
+    std::ostream& operator <<(std::ostream& stream, LiteralExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, VariableReadExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, PrefixExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, BinaryExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, PostfixExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, FunctionCallExpressionPtr const& expression);
+    std::ostream& operator <<(std::ostream& stream, Expression const& expression);
+    std::ostream& operator <<(std::ostream& stream, OptionalExpression const& expression);
+
+
     using ExpressionList = std::list<Expression>;
-
-
-    struct ExpressionHandler : HandlerBase
-    {
-        std::function<void(LiteralExpressionPtr const&)> literal_expression;
-        std::function<void(VariableReadExpressionPtr const&)> variable_read_expression;
-        std::function<void(PrefixExpressionPtr const&)> prefix_expression;
-        std::function<void(BinaryExpressionPtr const&)> binary_expression;
-        std::function<void(PostfixExpressionPtr const&)> postfix_expression;
-        std::function<void(FunctionCallExpressionPtr const&)> function_call_expression;
-
-        std::function<void(Expression const&)> default_handler;
-
-        void operator ()(LiteralExpressionPtr const& expression)
-        {
-            call_handler(expression, literal_expression, default_handler);
-        }
-
-        void operator ()(VariableReadExpressionPtr const& expression)
-        {
-            call_handler(expression, variable_read_expression, default_handler);
-        }
-
-        void operator ()(PrefixExpressionPtr const& expression)
-        {
-            call_handler(expression, prefix_expression, default_handler);
-        }
-
-        void operator ()(BinaryExpressionPtr const& expression)
-        {
-            call_handler(expression, binary_expression, default_handler);
-        }
-
-        void operator ()(PostfixExpressionPtr const& expression)
-        {
-            call_handler(expression, postfix_expression, default_handler);
-        }
-
-        void operator ()(FunctionCallExpressionPtr const& expression)
-        {
-            call_handler(expression, function_call_expression, default_handler);
-        }
-    };
 
 
     struct DoStatement;
@@ -139,6 +90,7 @@ namespace basically::ast
     struct AssignmentStatement;
     struct SubCallStatement;
 
+
     using DoStatementPtr = std::shared_ptr<DoStatement>;
     using ForStatementPtr = std::shared_ptr<ForStatement>;
     using SubDeclarationStatementPtr = std::shared_ptr<SubDeclarationStatement>;
@@ -151,6 +103,7 @@ namespace basically::ast
     using VariableDeclarationStatementPtr = std::shared_ptr<VariableDeclarationStatement>;
     using AssignmentStatementPtr = std::shared_ptr<AssignmentStatement>;
     using SubCallStatementPtr = std::shared_ptr<SubCallStatement>;
+
 
     using VariableDeclarationList = std::list<VariableDeclarationStatementPtr>;
 
@@ -168,87 +121,88 @@ namespace basically::ast
                                    AssignmentStatementPtr,
                                    SubCallStatementPtr>;
 
+
     using StatementList = std::list<Statement>;
 
 
-    struct StatementHandler : HandlerBase
+    std::ostream& operator <<(std::ostream& stream, DoStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, ForStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, SubDeclarationStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, FunctionDeclarationStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, IfStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, LoadStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, LoopStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, SelectStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, StructureDeclarationStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, VariableDeclarationStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, AssignmentStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, SubCallStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, VariableDeclarationList const& statement);
+    std::ostream& operator <<(std::ostream& stream, Statement const& statement);
+    std::ostream& operator <<(std::ostream& stream, StatementList const& statement);
+
+
+    struct AstHandler
     {
-        std::function<void(DoStatementPtr const&)> do_statement;
-        std::function<void(ForStatementPtr const&)> for_statement;
-        std::function<void(SubDeclarationStatementPtr const&)> sub_declaration_statement;
-        std::function<void(FunctionDeclarationStatementPtr const&)> function_declaration_statement;
-        std::function<void(IfStatementPtr const&)> if_statement;
-        std::function<void(LoadStatementPtr const&)> load_statement;
-        std::function<void(LoopStatementPtr const&)> loop_statement;
-        std::function<void(SelectStatementPtr const&)> select_statement;
-        std::function<void(StructureDeclarationStatementPtr const&)> structure_declaration_statement;
-        std::function<void(VariableDeclarationStatementPtr const&)> variable_declaration_statement;
-        std::function<void(AssignmentStatementPtr const&)> assignment_statement;
-        std::function<void(SubCallStatementPtr const&)> sub_call_statement;
+        protected:
+            template <typename DataType, typename HandlerType, typename DefaultHandlerType>
+            void call_handler(DataType const& object,
+                              HandlerType const& handler,
+                              DefaultHandlerType default_handler)
+            {
+                if (!handler)
+                {
+                    assert(default_handler);
+                    default_handler(object);
+                }
+
+                handler(object);
+            }
+    };
+
+
+    #define REGISTER_HANDLER(var_name, type_name) \
+        std::function<void(type_name const&)> var_name; \
+        \
+        void operator ()(type_name const& object) \
+        { \
+            call_handler(object, var_name, default_handler); \
+        }
+
+
+    struct ExpressionHandlers : AstHandler
+    {
+        REGISTER_HANDLER(literal_expression, LiteralExpressionPtr)
+        REGISTER_HANDLER(variable_read_expression, VariableReadExpressionPtr)
+        REGISTER_HANDLER(prefix_expression, PrefixExpressionPtr)
+        REGISTER_HANDLER(binary_expression, BinaryExpressionPtr)
+        REGISTER_HANDLER(postfix_expression, PostfixExpressionPtr)
+        REGISTER_HANDLER(function_call_expression, FunctionCallExpressionPtr)
+
+        std::function<void(Expression const&)> default_handler;
+    };
+
+
+    struct StatementHandlers : AstHandler
+    {
+        REGISTER_HANDLER(do_statement, DoStatementPtr)
+        REGISTER_HANDLER(for_statement, ForStatementPtr)
+        REGISTER_HANDLER(sub_declaration_statement, SubDeclarationStatementPtr)
+        REGISTER_HANDLER(function_declaration_statement, FunctionDeclarationStatementPtr)
+        REGISTER_HANDLER(if_statement, IfStatementPtr)
+        REGISTER_HANDLER(load_statement, LoadStatementPtr)
+        REGISTER_HANDLER(loop_statement, LoopStatementPtr)
+        REGISTER_HANDLER(select_statement, SelectStatementPtr)
+        REGISTER_HANDLER(structure_declaration_statement, StructureDeclarationStatementPtr)
+        REGISTER_HANDLER(variable_declaration_statement, VariableDeclarationStatementPtr)
+        REGISTER_HANDLER(assignment_statement, AssignmentStatementPtr)
+        REGISTER_HANDLER(sub_call_statement, SubCallStatementPtr)
 
         std::function<void(Statement const&)> default_handler;
-
-
-        void operator ()(DoStatementPtr const& statement)
-        {
-            call_handler(statement, do_statement, default_handler);
-        }
-
-        void operator ()(ForStatementPtr const& statement)
-        {
-            call_handler(statement, for_statement, default_handler);
-        }
-
-        void operator ()(SubDeclarationStatementPtr const& statement)
-        {
-            call_handler(statement, sub_declaration_statement, default_handler);
-        }
-
-        void operator ()(FunctionDeclarationStatementPtr const& statement)
-        {
-            call_handler(statement, function_declaration_statement, default_handler);
-        }
-
-        void operator ()(IfStatementPtr const& statement)
-        {
-            call_handler(statement, if_statement, default_handler);
-        }
-
-        void operator ()(LoadStatementPtr const& statement)
-        {
-            call_handler(statement, load_statement, default_handler);
-        }
-
-        void operator ()(LoopStatementPtr const& statement)
-        {
-            call_handler(statement, loop_statement, default_handler);
-        }
-
-        void operator ()(SelectStatementPtr const& statement)
-        {
-            call_handler(statement, select_statement, default_handler);
-        }
-
-        void operator ()(StructureDeclarationStatementPtr const& statement)
-        {
-            call_handler(statement, structure_declaration_statement, default_handler);
-        }
-
-        void operator ()(VariableDeclarationStatementPtr const& statement)
-        {
-            call_handler(statement, variable_declaration_statement, default_handler);
-        }
-
-        void operator ()(AssignmentStatementPtr const& statement)
-        {
-            call_handler(statement, assignment_statement, default_handler);
-        }
-
-        void operator ()(SubCallStatementPtr const& statement)
-        {
-            call_handler(statement, sub_call_statement, default_handler);
-        }
     };
+
+
+    #undef REGISTER_HANDLER
 
 
     using ConditionalBlock = std::tuple<Expression, StatementList>;
@@ -373,11 +327,11 @@ namespace basically::ast
         const StatementList body;
 
         ForStatement(source::Location const& new_location,
-                        lexing::Token const& new_index_name,
-                        Expression const& new_start_index,
-                        Expression const& new_end_index,
-                        OptionalExpression const& new_step_value,
-                        StatementList const& new_body)
+                     lexing::Token const& new_index_name,
+                     Expression const& new_start_index,
+                     Expression const& new_end_index,
+                     OptionalExpression const& new_step_value,
+                     StatementList const& new_body)
         : StatementBase(new_location),
           index_name(new_index_name),
           start_index(new_start_index),
@@ -413,10 +367,10 @@ namespace basically::ast
         const lexing::Token return_type;
 
         FunctionDeclarationStatement(source::Location const& new_location,
-                                        lexing::Token const& new_name,
-                                        VariableDeclarationList const& new_parameters,
-                                        lexing::Token const& new_return_type,
-                                        StatementList const& new_body)
+                                     lexing::Token const& new_name,
+                                     VariableDeclarationList const& new_parameters,
+                                     lexing::Token const& new_return_type,
+                                     StatementList const& new_body)
         : SubDeclarationStatement(new_location, new_name, new_parameters, new_body),
           return_type(new_return_type)
         {
