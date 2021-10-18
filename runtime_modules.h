@@ -62,6 +62,13 @@ namespace basically::runtime::modules
 
         public:
             void insert(typing::TypeInfoPtr&& item);
+
+        private:
+            template <typename FunctionType, typename... ExtraParams>
+            auto bind_member(FunctionType function, ExtraParams... params)
+            {
+                return std::bind(function, this, std::placeholders::_1, params...);
+            }
     };
 
 

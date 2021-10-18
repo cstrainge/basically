@@ -86,35 +86,11 @@ namespace basically::runtime::modules
     {
         auto statement_handlers = ast::StatementHandlers
             {
-                .sub_declaration_statement =
-                    [&](auto statement)
-                    {
-                        add_sub(statement);
-                    },
-
-                .function_declaration_statement =
-                    [&](auto statement)
-                    {
-                        add_function(statement);
-                    },
-
-                .load_statement =
-                    [&](auto statement)
-                    {
-                        load_submodule(statement, loader);
-                    },
-
-                .structure_declaration_statement =
-                    [&](auto statement)
-                    {
-                        add_structure(statement);
-                    },
-
-                .variable_declaration_statement =
-                    [&](auto statement)
-                    {
-                        add_variable(statement);
-                    },
+                .sub_declaration_statement       = bind(&Module::add_sub),
+                .function_declaration_statement  = bind(&Module::add_function),
+                .load_statement                  = bind(&Module::load_submodule, loader),
+                .structure_declaration_statement = bind(&Module::add_structure),
+                .variable_declaration_statement  = bind(&Module::add_variable),
 
                 .default_handler =
                     [&](auto statement)
@@ -132,6 +108,7 @@ namespace basically::runtime::modules
 
     void Module::process_passs_2()
     {
+        jitting::Jit jit;
     }
 
 
