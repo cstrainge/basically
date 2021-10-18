@@ -54,13 +54,6 @@ namespace basically::runtime::modules
         }
 
 
-        template <typename DataType>
-        auto bind(Module* module, DataType handler)
-        {
-            return std::bind(handler, module, std::placeholders::_1);
-        }
-
-
     }
 
 
@@ -91,18 +84,37 @@ namespace basically::runtime::modules
 
     void Module::process_passs_1(ast::StatementList const& ast, Loader& loader)
     {
-        auto load_handler = [&](auto statement)
-            {
-                load_submodule(statement, loader);
-            };
-
         auto statement_handlers = ast::StatementHandlers
             {
-                .sub_declaration_statement       = bind(this, &Module::add_sub),
-                .function_declaration_statement  = bind(this, &Module::add_function),
-                .load_statement                  = load_handler,
-                .structure_declaration_statement = bind(this, &Module::add_structure),
-                .variable_declaration_statement  = bind(this, &Module::add_variable),
+                .sub_declaration_statement =
+                    [&](auto statement)
+                    {
+                        add_sub(statement);
+                    },
+
+                .function_declaration_statement =
+                    [&](auto statement)
+                    {
+                        add_function(statement);
+                    },
+
+                .load_statement =
+                    [&](auto statement)
+                    {
+                        load_submodule(statement, loader);
+                    },
+
+                .structure_declaration_statement =
+                    [&](auto statement)
+                    {
+                        add_structure(statement);
+                    },
+
+                .variable_declaration_statement =
+                    [&](auto statement)
+                    {
+                        add_variable(statement);
+                    },
 
                 .default_handler =
                     [&](auto statement)

@@ -34,6 +34,7 @@ namespace basically::runtime::variables
     {
         private:
             ScopePtr parent;
+            InfoMap variables;
 
         public:
             Scope() = default;
@@ -47,7 +48,7 @@ namespace basically::runtime::variables
             Scope& operator =(Scope&& scope) = default;
 
         public:
-            InfoPtr find() const noexcept;
+            InfoPtr find(std::string const& name) const noexcept;
     };
 
 

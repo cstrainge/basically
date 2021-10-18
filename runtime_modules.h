@@ -28,7 +28,7 @@ namespace basically::runtime::modules
             typing::SubInfoMap subs;
             typing::FunctionInfoMap functions;
 
-            variables::InfoMap variables;
+            variables::Scope variable_scope;
 
             ast::StatementList startup;
 

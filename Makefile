@@ -1,8 +1,8 @@
 
 CXX = g++-10
 
-sources = source.cpp lexing.cpp parsing.cpp ast.cpp typing.cpp runtime.cpp runtime_variables.cpp \
-          runtime_modules.cpp basically.cpp
+sources = source.cpp lexing.cpp parsing.cpp ast.cpp typing.cpp runtime.cpp runtime_jitting.cpp \
+          runtime_variables.cpp runtime_modules.cpp basically.cpp
 
 objects = $(sources:.cpp=.o)
 
@@ -51,6 +51,9 @@ typing.o: typing.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
 runtime.o: runtime.cpp $(pch)
+	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
+
+runtime_jitting.o: runtime_jitting.cpp $(pch)
 	$(CXX) $(CXXFLAGS) -c $(*).cpp -o $(*).o
 
 runtime_variables.o: runtime_variables.cpp $(pch)
