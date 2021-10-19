@@ -9,11 +9,16 @@ namespace basically::runtime::variables
     struct Info
     {
         std::string name;
-        typing::TypeInfoPtr type;
-        ast::Expression initializer;
-        typing::Visibility visibility;
+        typing::TypeRef type;
+
+        ast::OptionalExpression initializer;
+
         size_t array_count;
         bool is_const;
+
+        typing::Visibility visibility;
+
+        Info(ast::VariableDeclarationStatementPtr const& declaration);
 
         bool is_array() const noexcept;
         size_t size() const noexcept;
@@ -32,7 +37,7 @@ namespace basically::runtime::variables
 
     class Scope
     {
-        private:
+        public:
             ScopePtr parent;
             InfoMap variables;
 

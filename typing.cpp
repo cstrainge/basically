@@ -6,11 +6,28 @@ namespace basically::typing
 {
 
 
+    TypeRef::TypeRef(lexing::Token const& ref_token)
+    : ref_location(ref_token.location),
+      type_name(ref_token.text),
+      resolved_type(nullptr)
+    {
+        assert(ref_token.type == lexing::Type::Identifier);
+    }
+
+
+    TypeInfo::TypeInfo(ast::StructureDeclarationStatementPtr const& declaration)
+    : TypeInfo(declaration->name.text, std::make_shared<StructureInfo>(declaration))
+      // visibility
+    {
+    }
+
+
     TypeInfo::TypeInfo(std::string const& new_name,
                        TypeExtraInfo new_extra,
-                       Visibility visibility)
+                       Visibility new_visibility)
     : name(new_name),
-      extra(new_extra)
+      extra(new_extra),
+      visibility(new_visibility)
     {
     }
 
@@ -42,7 +59,7 @@ namespace basically::typing
 
                         for (auto const& field : value->fields)
                         {
-                            size_sum = field.type->size();
+                            size_sum = field.type.resolved_type->size();
                         }
 
                         new_size = size_sum;
@@ -52,6 +69,26 @@ namespace basically::typing
         std::visit(handler, extra);
 
         return new_size;
+    }
+
+
+    StructureInfo::StructureInfo(ast::StructureDeclarationStatementPtr const& declaration)
+    {
+    }
+
+
+    SubInfo::SubInfo(ast::SubDeclarationStatementPtr const& declaration)
+    : name(declaration->name.text),
+      parameters(),
+      body()
+    {
+    }
+
+
+    FunctionInfo::FunctionInfo(ast::FunctionDeclarationStatementPtr const& declaration)
+    : SubInfo(declaration),
+      return_type(declaration->return_type)
+    {
     }
 
 

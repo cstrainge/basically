@@ -72,8 +72,5 @@
         "map": "cpp",
         "ratio": "cpp",
         "iomanip": "cpp"
-    },
-    "cSpell.words": [
-        "initilizer"
-    ]
+    }
 }

@@ -19,6 +19,18 @@ namespace basically::typing
     using TypeInfoMap = std::unordered_map<std::string, TypeInfoPtr>;
 
 
+    struct TypeRef
+    {
+        source::Location ref_location;
+
+        std::string type_name;
+        TypeInfoPtr resolved_type;
+
+        TypeRef() = default;
+        TypeRef(lexing::Token const& ref_token);
+    };
+
+
     enum class Visibility
     {
         Public,
@@ -53,11 +65,13 @@ namespace basically::typing
     {
         std::string name;
         TypeExtraInfo extra;
-        Visibility visibility;
+        Visibility visibility = Visibility::Default;
 
-        TypeInfo(std::string const& name,
-                 TypeExtraInfo extra,
-                 Visibility visibility = Visibility::Default);
+        TypeInfo() = default;
+        TypeInfo(ast::StructureDeclarationStatementPtr const& declaration);
+        TypeInfo(std::string const& new_name,
+                 TypeExtraInfo new_extra,
+                 Visibility new_visibility = Visibility::Default);
 
         size_t size() const noexcept;
     };
@@ -110,8 +124,10 @@ namespace basically::typing
     struct FieldInfo
     {
         std::string name;
-        TypeInfoPtr type;
+        TypeRef type;
+
         size_t offset;
+
         ast::Expression initializer;
     };
 
@@ -122,13 +138,16 @@ namespace basically::typing
     struct StructureInfo : public TypeInfo
     {
         FieldInfoList fields;
+
+        StructureInfo(ast::StructureDeclarationStatementPtr const& declaration);
     };
 
 
     struct ParameterInfo
     {
         std::string name;
-        TypeInfoPtr type;
+        TypeRef type;
+
         ast::Expression initializer;
     };
 
@@ -139,9 +158,13 @@ namespace basically::typing
     struct SubInfo
     {
         std::string name;
+
         ParameterList parameters;
-        Visibility visibility = Visibility::Default;
         ast::StatementList body;
+
+        Visibility visibility = Visibility::Default;
+
+        SubInfo(ast::SubDeclarationStatementPtr const& declaration);
     };
 
 
@@ -151,7 +174,9 @@ namespace basically::typing
 
     struct FunctionInfo : public SubInfo
     {
-        TypeInfoPtr return_type;
+        TypeRef return_type;
+
+        FunctionInfo(ast::FunctionDeclarationStatementPtr const& declaration);
     };
 
 

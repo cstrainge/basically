@@ -61,7 +61,7 @@ namespace basically::runtime::jitting
 
 
     Jit::Jit()
-    : context(gcc_jit_context_acquire())
+    : Jit(Options {})
     {
         if (context == nullptr)
         {
@@ -71,16 +71,19 @@ namespace basically::runtime::jitting
 
 
     Jit::Jit(Options const& options)
-    : Jit()
+    : context(gcc_jit_context_acquire()),
+      result(nullptr)
     {
         set_context_options(context, options);
     }
 
 
     Jit::Jit(Jit&& jit) noexcept
-    : context(jit.context)
+    : context(jit.context),
+      result(jit.result)
     {
         jit.context = nullptr;
+        jit.result = nullptr;
     }
 
 
@@ -98,7 +101,10 @@ namespace basically::runtime::jitting
             release();
 
             context = jit.context;
+            result = jit.result;
+
             jit.context = nullptr;
+            jit.result = nullptr;
         }
 
         return *this;
@@ -112,6 +118,12 @@ namespace basically::runtime::jitting
         {
             gcc_jit_context_release(context);
             context = nullptr;
+        }
+
+        if (result != nullptr)
+        {
+            gcc_jit_result_release(result);
+            result = nullptr;
         }
     }
 

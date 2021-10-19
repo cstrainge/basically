@@ -74,34 +74,36 @@ namespace basically::ast
     std::ostream& operator <<(std::ostream& stream, OptionalExpression const& expression);
 
 
-    using ExpressionList = std::list<Expression>;
+    using ExpressionList = std::vector<Expression>;
 
 
+    struct AssignmentStatement;
+    // struct BreakStatement;
     struct DoStatement;
     struct ForStatement;
-    struct SubDeclarationStatement;
     struct FunctionDeclarationStatement;
     struct IfStatement;
     struct LoadStatement;
     struct LoopStatement;
+    // struct ReturnStatement;
     struct SelectStatement;
     struct StructureDeclarationStatement;
+    struct SubDeclarationStatement;
     struct VariableDeclarationStatement;
-    struct AssignmentStatement;
     struct SubCallStatement;
 
 
+    using AssignmentStatementPtr = std::shared_ptr<AssignmentStatement>;
     using DoStatementPtr = std::shared_ptr<DoStatement>;
     using ForStatementPtr = std::shared_ptr<ForStatement>;
-    using SubDeclarationStatementPtr = std::shared_ptr<SubDeclarationStatement>;
     using FunctionDeclarationStatementPtr = std::shared_ptr<FunctionDeclarationStatement>;
     using IfStatementPtr = std::shared_ptr<IfStatement>;
     using LoadStatementPtr = std::shared_ptr<LoadStatement>;
     using LoopStatementPtr = std::shared_ptr<LoopStatement>;
     using SelectStatementPtr = std::shared_ptr<SelectStatement>;
     using StructureDeclarationStatementPtr = std::shared_ptr<StructureDeclarationStatement>;
+    using SubDeclarationStatementPtr = std::shared_ptr<SubDeclarationStatement>;
     using VariableDeclarationStatementPtr = std::shared_ptr<VariableDeclarationStatement>;
-    using AssignmentStatementPtr = std::shared_ptr<AssignmentStatement>;
     using SubCallStatementPtr = std::shared_ptr<SubCallStatement>;
 
 
@@ -224,10 +226,10 @@ namespace basically::ast
     struct VariableReadExpression : public ExpressionBase
     {
         const lexing::Token name;
-        const Expression subscript;
+        const OptionalExpression subscript;
 
         VariableReadExpression(lexing::Token const& new_name,
-                               Expression const& new_subscript)
+                               OptionalExpression const& new_subscript)
         : ExpressionBase(new_name.location),
           name(new_name),
           subscript(new_subscript)

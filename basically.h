@@ -57,8 +57,8 @@
     #include "parsing.h"
     #include "typing.h"
     #include "runtime.h"
-    #include "runtime_jitting.h"
     #include "runtime_variables.h"
+    #include "runtime_jitting.h"
     #include "runtime_modules.h"
 
 

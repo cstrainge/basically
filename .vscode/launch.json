@@ -8,7 +8,7 @@
     "configurations":
     [
         {
-            "name": "basically Debug",
+            "name": "Basically Debug",
             "type": "cppdbg",
             "MIMode": "gdb",
 
@@ -17,7 +17,7 @@
 
             "program": "${workspaceFolder}/basically",
             "cwd": "${workspaceFolder}",
-            "args": [ "test.bas" ],
+            "args": [ "./sample/test.bas" ],
             "environment": [],
 
             "preLaunchTask": "C/C++ Build",

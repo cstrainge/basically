@@ -10,45 +10,44 @@ namespace basically::runtime::modules
     {
 
 
-        void add_number_type(ModulePtr module,
-                             std::string const& name,
-                             typing::SignedFlag is_signed,
-                             typing::FloatingPointFlag is_floating_point,
-                             size_t size)
-        {
-            auto extra = std::make_shared<typing::NumberInfo>(is_signed,
-                                                              is_floating_point,
-                                                              size);
-
-            module->insert(std::make_shared<typing::TypeInfo>(name,
-                                                              extra,
-                                                              typing::Visibility::Public));
-        }
-
-
         ModulePtr create_builtins()
         {
+            auto builtins = std::make_shared<Module>();
+
+            auto add_number_type = [&](std::string const& name,
+                                       typing::SignedFlag is_signed,
+                                       typing::FloatingPointFlag is_floating_point,
+                                       size_t size)
+                {
+                    auto extra = std::make_shared<typing::NumberInfo>(is_signed,
+                                                                      is_floating_point,
+                                                                      size);
+
+                    builtins->insert(std::make_shared<typing::TypeInfo>(
+                                                                       name,
+                                                                       extra,
+                                                                       typing::Visibility::Public));
+                };
+
             const auto is_signed = typing::SignedFlag::IsSigned;
             const auto is_unsigned = typing::SignedFlag::IsUnsigned;
             const auto is_integer = typing::FloatingPointFlag::IsInteger;
             const auto is_float = typing::FloatingPointFlag::IsFloatingPoint;
 
-            auto builtins = std::make_shared<Module>();
+            add_number_type("i8", is_signed, is_integer, 1);
+            add_number_type("u8", is_unsigned, is_integer, 1);
 
-            add_number_type(builtins, "i8", is_signed, is_integer, 1);
-            add_number_type(builtins, "u8", is_unsigned, is_integer, 1);
+            add_number_type("i16", is_signed, is_integer, 2);
+            add_number_type("u16", is_unsigned, is_integer, 2);
 
-            add_number_type(builtins, "i16", is_signed, is_integer, 2);
-            add_number_type(builtins, "u16", is_unsigned, is_integer, 2);
+            add_number_type("i32", is_signed, is_integer, 4);
+            add_number_type("u32", is_unsigned, is_integer, 4);
 
-            add_number_type(builtins, "i32", is_signed, is_integer, 4);
-            add_number_type(builtins, "u32", is_unsigned, is_integer, 4);
+            add_number_type("i64", is_signed, is_integer, 8);
+            add_number_type("u64", is_unsigned, is_integer, 8);
 
-            add_number_type(builtins, "i64", is_signed, is_integer, 8);
-            add_number_type(builtins, "u64", is_unsigned, is_integer, 8);
-
-            add_number_type(builtins, "f32", is_signed, is_float, 4);
-            add_number_type(builtins, "f64", is_signed, is_float, 8);
+            add_number_type("f32", is_signed, is_float, 4);
+            add_number_type("f64", is_signed, is_float, 8);
 
             return builtins;
         }
@@ -73,12 +72,13 @@ namespace basically::runtime::modules
     {
         process_passs_1(new_code, loader);
         process_passs_2();
+        process_passs_3();
     }
 
 
     int Module::execute()
     {
-        return 0;
+        return init_function();
     }
 
 
@@ -95,7 +95,7 @@ namespace basically::runtime::modules
                 .default_handler =
                     [&](auto statement)
                     {
-                        startup.push_back(statement);
+                        startup_ast.push_back(statement);
                     }
             };
 
@@ -108,32 +108,112 @@ namespace basically::runtime::modules
 
     void Module::process_passs_2()
     {
-        jitting::Jit jit;
+        // Resolve type/function references...
+    }
+
+
+    void Module::process_passs_3()
+    {
+        // Jit compile all the code...
     }
 
 
     void Module::load_submodule(ast::LoadStatementPtr const& statement, Loader& loader)
     {
+        assert(statement->module_name.type == lexing::Type::Identifier);
+
+        auto name = statement->module_name.text;
+
+        if (loaded_modules.find(name) != loaded_modules.end())
+        {
+            runtime_error(statement->location, "Requested module, " + name + ", already loaded.");
+        }
+
+        auto module = loader.get_module(name);
+
+        if (!module)
+        {
+            runtime_error(statement->location, "Could not load the module, " + name + ".");
+        }
+
+        if (statement->alias.type != lexing::Type::None)
+        {
+            assert(statement->alias.type == lexing::Type::Identifier);
+            name = statement->alias.text;
+        }
+
+        loaded_modules.insert({ name, module });
     }
 
 
     void Module::add_sub(ast::SubDeclarationStatementPtr const& statement)
     {
+        insert_object(subs, "sub", statement);
     }
 
 
     void Module::add_function(ast::FunctionDeclarationStatementPtr const& statement)
     {
+        insert_object(functions, "function", statement);
     }
 
 
-    void Module::add_structure(ast::StructureDeclarationStatementPtr const& statemnent)
+    void Module::add_structure(ast::StructureDeclarationStatementPtr const& statement)
     {
+        insert_object(types, "structure", statement);
     }
 
 
     void Module::add_variable(ast::VariableDeclarationStatementPtr const& statement)
     {
+        //insert_object(variable_scope->variables, "variable", statement);
+    }
+
+
+    template <typename ObjectType, typename StatementType>
+    void Module::insert_object(
+                           std::unordered_map<std::string, std::shared_ptr<ObjectType>>& collection,
+                           std::string const& type_name,
+                           StatementType const& statement) const
+    {
+        assert(statement->name.type == lexing::Type::Identifier);
+
+        auto name = statement->name.text;
+
+        ensure_unique(collection, statement->location, type_name, name);
+
+        auto new_object = std::make_shared<ObjectType>(statement);
+        //collection.insert({ name, new_object });
+    }
+
+
+    template <typename CollectionType>
+    void Module::ensure_unique(CollectionType const& collection,
+                               source::Location const& location,
+                               std::string const& type_name,
+                               std::string const& name) const
+    {
+        if (collection.find(name) != collection.end())
+        {
+            duplicate_definition(location, type_name, name);
+        }
+    }
+
+
+    void Module::duplicate_definition(source::Location const& location,
+                                      std::string const& type_name,
+                                      std::string const& name) const
+    {
+        runtime_error(location, "Duplicate definition for " + type_name + ", " + name + ".");
+    }
+
+
+    void Module::runtime_error(source::Location const& location, std::string const&& message) const
+    {
+        std::stringstream stream;
+
+        stream << location << message;
+        throw std::runtime_error(stream.str());
     }
 
 
@@ -231,17 +311,20 @@ namespace basically::runtime::modules
         auto token_buffer = lexing::Buffer(source_buffer);
 
         auto ast = parsing::parse_to_ast(token_buffer);
-        auto name_without_extension = without_extension(name);
 
-        std::cout << "Loading module " << name_without_extension
-                  << " from " << module_path << "."
-                  << std::endl;
+        std::cout << std::endl << ast << std::endl;
 
-        auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast, *this);
+//        auto name_without_extension = without_extension(name);
+//
+//        std::cout << "Loading module " << name_without_extension
+//                  << " from " << module_path << "."
+//                  << std::endl;
 
-        loaded_modules.insert({ without_extension(name), new_module });
+        //auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast, *this);
 
-        return new_module;
+        //loaded_modules.insert({ without_extension(name), new_module });
+
+        return get_builtins_module();
     }
 
 

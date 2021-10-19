@@ -28,9 +28,12 @@ namespace basically::runtime::modules
             typing::SubInfoMap subs;
             typing::FunctionInfoMap functions;
 
-            variables::Scope variable_scope;
+            variables::ScopePtr variable_scope;
 
-            ast::StatementList startup;
+            ast::StatementList startup_ast;
+
+            jitting::Jit jitter;
+            std::function<int()> init_function = []() { return EXIT_FAILURE; };
 
         public:
             Module() = default;
@@ -52,6 +55,7 @@ namespace basically::runtime::modules
         private:
             void process_passs_1(ast::StatementList const& ast, Loader& loader);
             void process_passs_2();
+            void process_passs_3();
 
             void load_submodule(ast::LoadStatementPtr const& statement, Loader& loader);
 
@@ -65,10 +69,31 @@ namespace basically::runtime::modules
 
         private:
             template <typename FunctionType, typename... ExtraParams>
-            auto bind_member(FunctionType function, ExtraParams... params)
+            auto bind(FunctionType function, ExtraParams... params)
             {
                 return std::bind(function, this, std::placeholders::_1, params...);
             }
+
+        private:
+            template <typename ObjectType, typename StatementType>
+            void insert_object(
+                           std::unordered_map<std::string, std::shared_ptr<ObjectType>>& collection,
+                           std::string const& type_name,
+                           StatementType const& statement) const;
+
+            template <typename CollectionType>
+            void ensure_unique(CollectionType const& collection,
+                               source::Location const& location,
+                               std::string const& type_name,
+                               std::string const& name) const;
+
+        private:
+            [[noreturn]]
+            void duplicate_definition(source::Location const& location,
+                                      std::string const& type_name,
+                                      std::string const& name) const;
+            [[noreturn]]
+            void runtime_error(source::Location const& location, std::string const&& message) const;
     };
 
 

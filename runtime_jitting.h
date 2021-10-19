@@ -9,7 +9,9 @@ namespace basically::runtime::jitting
     struct Options
     {
         OptionalString progname;
-        OptionalBool debug_info;
+
+        OptionalBool debug_info = true;
+
         OptionalBool dump_initial_tree;
         OptionalBool dump_initial_gimple;
         OptionalBool dump_generated_code;
@@ -24,6 +26,7 @@ namespace basically::runtime::jitting
     {
         private:
             gcc_jit_context* context;
+            gcc_jit_result* result;
 
         public:
             Jit();
@@ -35,6 +38,14 @@ namespace basically::runtime::jitting
         public:
             Jit& operator =(Jit const& jit) = delete;
             Jit& operator =(Jit&& jit) noexcept;
+
+        public:
+            // create_type
+
+            void create_local(variables::Info variable);
+
+            // create_sub
+            // create_function
 
         private:
             void release() noexcept;
