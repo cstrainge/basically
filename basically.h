@@ -42,6 +42,7 @@
 
 
         using OptionalBool = std::optional<bool>;
+        using OptionalInt = std::optional<int>;
         using OptionalChar = std::optional<char>;
         using OptionalString = std::optional<std::string>;
         using OptionalSize = std::optional<size_t>;

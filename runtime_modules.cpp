@@ -86,10 +86,10 @@ namespace basically::runtime::modules
     {
         auto statement_handlers = ast::StatementHandlers
             {
-                .sub_declaration_statement       = bind(&Module::add_sub),
                 .function_declaration_statement  = bind(&Module::add_function),
                 .load_statement                  = bind(&Module::load_submodule, loader),
                 .structure_declaration_statement = bind(&Module::add_structure),
+                .sub_declaration_statement       = bind(&Module::add_sub),
                 .variable_declaration_statement  = bind(&Module::add_variable),
 
                 .default_handler =
@@ -104,7 +104,6 @@ namespace basically::runtime::modules
             std::visit(statement_handlers, statement);
         }
     }
-
 
     void Module::process_passs_2()
     {

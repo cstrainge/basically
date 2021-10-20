@@ -19,6 +19,7 @@ namespace basically::runtime::jitting
         OptionalBool dump_everything;
         OptionalBool selfcheck_gc;
         OptionalBool keep_intermediates;
+        OptionalInt optimization_level;
     };
 
 

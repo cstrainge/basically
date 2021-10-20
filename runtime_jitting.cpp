@@ -24,6 +24,13 @@ namespace basically::runtime::jitting
         }
 
 
+        template <typename IdType>
+        void call_setter(gcc_jit_context* context, IdType id, OptionalInt const& option) noexcept
+        {
+            gcc_jit_context_set_int_option(context, id, option.value());
+        }
+
+
         template <typename IdType, typename ValueType>
         void set_if_provided(gcc_jit_context* context,
                              IdType id,
@@ -51,6 +58,7 @@ namespace basically::runtime::jitting
             SET_OPTION(GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING, dump_everything);
             SET_OPTION(GCC_JIT_BOOL_OPTION_SELFCHECK_GC, selfcheck_gc);
             SET_OPTION(GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES, keep_intermediates);
+            SET_OPTION(GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL, optimization_level);
         }
 
 
