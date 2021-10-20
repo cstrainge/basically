@@ -31,10 +31,9 @@ namespace basically::ast
 
         std::ostream& operator <<(std::ostream& stream, Indent const& the_indent)
         {
-            if (the_indent.amount > 0)
-            {
-                stream << std::string(the_indent.amount, ' ');
-            }
+            std::string indent_str(the_indent.amount, ' ');
+
+            stream << indent_str;
 
             return stream;
         }
@@ -119,21 +118,7 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, FunctionCallExpressionPtr const& expression)
     {
-        stream << expression->name.text << "(";
-
-        auto size = expression->parameters.size();
-
-        for (size_t i = 0; i < size; ++i)
-        {
-            stream << expression->parameters[i];
-
-            if (i < size - 1)
-            {
-                stream << ", ";
-            }
-        }
-
-        stream << ")";
+        stream << expression->name.text << "(" << expression->parameters << ")";
 
         return stream;
     }
@@ -171,6 +156,24 @@ namespace basically::ast
     }
 
 
+    std::ostream& operator <<(std::ostream& stream, ExpressionList const& expressions)
+    {
+        auto size = expressions.size();
+
+        for (size_t i = 0; i < expressions.size(); ++i)
+        {
+            stream << expressions[i];
+
+            if (i < (size - 1))
+            {
+                stream << ", ";
+            }
+        }
+
+        return stream;
+    }
+
+
     std::ostream& operator <<(std::ostream& stream, DoStatementPtr const& statement)
     {
         auto terminator_to_string = [&]()
@@ -183,11 +186,14 @@ namespace basically::ast
                 return type == lexing::Type::KeywordWhile ? "while" : "until";
             };
 
-        //++indent;
 
-        stream << "do " << terminator_to_string() << " " << statement->test << std::endl
-               << indent << statement->body
-               << indent << "end do";
+        stream << "do " << terminator_to_string() << " " << statement->test << std::endl;
+
+        ++indent;
+        stream << statement->body;
+        --indent;
+
+        stream << indent << "end do";
 
         return stream;
     }
@@ -195,7 +201,17 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, ForStatementPtr const& statement)
     {
-        stream << "ForStatementPtr";
+        stream << "for " << statement->index_name.text
+               << " = " << statement->start_index
+               << " to " << statement->end_index
+               << " step " << statement->step_value
+               << std::endl;
+
+        ++indent;
+        stream << indent << statement->body << std::endl;
+        --indent;
+
+        stream << indent << "end for";
 
         return stream;
     }
@@ -203,15 +219,33 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, SubDeclarationStatementPtr const& statement)
     {
-        stream << "SubDeclarationStatementPtr";
+        stream << "sub " << statement->name.text
+               << "( " << statement->parameters << ")"
+               << std::endl;
+
+        ++indent;
+        stream << statement->body << std::endl;
+        --indent;
+
+        stream << indent << "end sub";
 
         return stream;
     }
 
 
-    std::ostream& operator <<(std::ostream& stream, FunctionDeclarationStatementPtr const& statement)
+    std::ostream& operator <<(std::ostream& stream,
+                              FunctionDeclarationStatementPtr const& statement)
     {
-        stream << "FunctionDeclarationStatementPtr";
+        stream << "function " << statement->name.text
+               << "( " << statement->parameters << ") as "
+               << statement->return_type.text
+               << std::endl;
+
+        ++indent;
+        stream << statement->body << std::endl;
+        --indent;
+
+        stream << indent << "end function";
 
         return stream;
     }
@@ -219,7 +253,34 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, IfStatementPtr const& statement)
     {
-        stream << "IfStatementPtr";
+        auto [ main_test, main_body ] = statement->main_block;
+
+        ++indent;
+        stream << "if " << main_test << " then" << std::endl
+               << indent << main_body << std::endl;
+        --indent;
+
+        for (auto& else_if : statement->else_if_blocks)
+        {
+            auto [ test, body ] = else_if;
+
+            stream << indent << "else if " << test << " then" << std::endl;
+
+            ++indent;
+            stream << indent << body << std::endl;
+            --indent;
+        }
+
+        if (!statement->else_block.empty())
+        {
+            stream << indent << "else" << std::endl;
+
+            ++indent;
+            stream << indent << statement->else_block << std::endl;
+            --indent;
+        }
+
+        stream << indent << "end if";
 
         return stream;
     }
@@ -227,7 +288,12 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, LoadStatementPtr const& statement)
     {
-        stream << "LoadStatementPtr";
+        stream << "load " << statement->module_name.text;
+
+        if (statement->alias.type != lexing::Type::None)
+        {
+            stream << " as " << statement->alias;
+        }
 
         return stream;
     }
@@ -235,7 +301,11 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, LoopStatementPtr const& statement)
     {
-        stream << "LoopStatementPtr";
+        ++indent;
+        stream << "loop" << std::endl << indent << statement->body;
+        --indent;
+
+        stream << indent << "end loop";
 
         return stream;
     }
@@ -243,21 +313,66 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, SelectStatementPtr const& statement)
     {
-        stream << "SelectStatementPtr";
+        stream << "select " << statement->test << std::endl;
+
+        ++indent;
+
+        for (auto const& condition : statement->conditions)
+        {
+            auto const& [ test, body ] = condition;
+
+            stream << indent << "case " << test << std::endl;
+
+            if (!body.empty())
+            {
+                ++indent;
+                stream << indent << body << std::endl;
+                --indent;
+            }
+        }
+
+        if (!statement->default_condition.empty())
+        {
+            stream << indent << statement->default_condition << std::endl;
+        }
+
+        --indent;
+
+        stream << indent << "end select";
 
         return stream;
     }
 
 
-    std::ostream& operator <<(std::ostream& stream, StructureDeclarationStatementPtr const& statement)
+    std::ostream& operator <<(std::ostream& stream,
+                              StructureDeclarationStatementPtr const& statement)
     {
-        stream << "StructureDeclarationStatementPtr";
+        stream << "structure " << statement->name << std::endl;
+
+        ++indent;
+
+        for (auto const& field : statement->members)
+        {
+            stream << indent << field->name.text << " as " << field->type_name.text;
+
+            if (field->initializer)
+            {
+                stream << " = " << field->initializer;
+            }
+
+            stream << std::endl;
+        }
+
+        --indent;
+
+        stream << indent << "end structure";
 
         return stream;
     }
 
 
-    std::ostream& operator <<(std::ostream& stream, VariableDeclarationStatementPtr const& statement)
+    std::ostream& operator <<(std::ostream& stream,
+                              VariableDeclarationStatementPtr const& statement)
     {
         stream << "var " << statement->name.text
                << " as " << statement->type_name.text
@@ -277,15 +392,32 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, SubCallStatementPtr const& statement)
     {
-        stream << "SubCallStatementPtr";
+        stream << statement->name.text << "(" << statement->parameters << ")";
 
         return stream;
     }
 
 
-    std::ostream& operator <<(std::ostream& stream, VariableDeclarationList const& statement)
+    std::ostream& operator <<(std::ostream& stream, VariableDeclarationList const& list)
     {
-        stream << "VariableDeclarationList";
+        auto size = list.size();
+
+        for (auto [ i, iter ] = std::pair(0, list.begin()); i < size; ++i, ++iter)
+        {
+            auto const& item = *iter;
+
+            stream << item->name.text << " as " << item->type_name.text;
+
+            if (item->initializer)
+            {
+                stream << " = " << item->initializer;
+            }
+
+            if (i < (size - 1))
+            {
+                stream << ", ";
+            }
+        }
 
         return stream;
     }
@@ -295,18 +427,18 @@ namespace basically::ast
     {
         std::visit(StatementHandlers
             {
+                .assignment_statement            = [&](auto real) { stream << real; },
                 .do_statement                    = [&](auto real) { stream << real; },
                 .for_statement                   = [&](auto real) { stream << real; },
-                .sub_declaration_statement       = [&](auto real) { stream << real; },
                 .function_declaration_statement  = [&](auto real) { stream << real; },
                 .if_statement                    = [&](auto real) { stream << real; },
                 .load_statement                  = [&](auto real) { stream << real; },
                 .loop_statement                  = [&](auto real) { stream << real; },
                 .select_statement                = [&](auto real) { stream << real; },
                 .structure_declaration_statement = [&](auto real) { stream << real; },
-                .variable_declaration_statement  = [&](auto real) { stream << real; },
-                .assignment_statement            = [&](auto real) { stream << real; },
-                .sub_call_statement              = [&](auto real) { stream << real; }
+                .sub_call_statement              = [&](auto real) { stream << real; },
+                .sub_declaration_statement       = [&](auto real) { stream << real; },
+                .variable_declaration_statement  = [&](auto real) { stream << real; }
             },
             statement);
 

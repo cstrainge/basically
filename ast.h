@@ -64,6 +64,9 @@ namespace basically::ast
     using OptionalExpression = std::optional<Expression>;
 
 
+    using ExpressionList = std::vector<Expression>;
+
+
     std::ostream& operator <<(std::ostream& stream, LiteralExpressionPtr const& expression);
     std::ostream& operator <<(std::ostream& stream, VariableReadExpressionPtr const& expression);
     std::ostream& operator <<(std::ostream& stream, PrefixExpressionPtr const& expression);
@@ -72,9 +75,7 @@ namespace basically::ast
     std::ostream& operator <<(std::ostream& stream, FunctionCallExpressionPtr const& expression);
     std::ostream& operator <<(std::ostream& stream, Expression const& expression);
     std::ostream& operator <<(std::ostream& stream, OptionalExpression const& expression);
-
-
-    using ExpressionList = std::vector<Expression>;
+    std::ostream& operator <<(std::ostream& stream, ExpressionList const& expressions);
 
 
     struct AssignmentStatement;
@@ -88,9 +89,9 @@ namespace basically::ast
     // struct ReturnStatement;
     struct SelectStatement;
     struct StructureDeclarationStatement;
+    struct SubCallStatement;
     struct SubDeclarationStatement;
     struct VariableDeclarationStatement;
-    struct SubCallStatement;
 
 
     using AssignmentStatementPtr = std::shared_ptr<AssignmentStatement>;
@@ -102,44 +103,45 @@ namespace basically::ast
     using LoopStatementPtr = std::shared_ptr<LoopStatement>;
     using SelectStatementPtr = std::shared_ptr<SelectStatement>;
     using StructureDeclarationStatementPtr = std::shared_ptr<StructureDeclarationStatement>;
+    using SubCallStatementPtr = std::shared_ptr<SubCallStatement>;
     using SubDeclarationStatementPtr = std::shared_ptr<SubDeclarationStatement>;
     using VariableDeclarationStatementPtr = std::shared_ptr<VariableDeclarationStatement>;
-    using SubCallStatementPtr = std::shared_ptr<SubCallStatement>;
 
 
     using VariableDeclarationList = std::list<VariableDeclarationStatementPtr>;
 
 
-    using Statement = std::variant<DoStatementPtr,
+    using Statement = std::variant<AssignmentStatementPtr,
+                                   DoStatementPtr,
                                    ForStatementPtr,
-                                   SubDeclarationStatementPtr,
                                    FunctionDeclarationStatementPtr,
                                    IfStatementPtr,
                                    LoadStatementPtr,
                                    LoopStatementPtr,
                                    SelectStatementPtr,
                                    StructureDeclarationStatementPtr,
-                                   VariableDeclarationStatementPtr,
-                                   AssignmentStatementPtr,
-                                   SubCallStatementPtr>;
+                                   SubDeclarationStatementPtr,
+                                   SubCallStatementPtr,
+                                   VariableDeclarationStatementPtr>;
 
 
     using StatementList = std::list<Statement>;
 
 
+    std::ostream& operator <<(std::ostream& stream, AssignmentStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, DoStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, ForStatementPtr const& statement);
-    std::ostream& operator <<(std::ostream& stream, SubDeclarationStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, FunctionDeclarationStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, IfStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, LoadStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, LoopStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, SelectStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, StructureDeclarationStatementPtr const& statement);
-    std::ostream& operator <<(std::ostream& stream, VariableDeclarationStatementPtr const& statement);
-    std::ostream& operator <<(std::ostream& stream, AssignmentStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, SubCallStatementPtr const& statement);
+    std::ostream& operator <<(std::ostream& stream, SubDeclarationStatementPtr const& statement);
     std::ostream& operator <<(std::ostream& stream, VariableDeclarationList const& statement);
+    std::ostream& operator <<(std::ostream& stream, VariableDeclarationStatementPtr const& statement);
+
     std::ostream& operator <<(std::ostream& stream, Statement const& statement);
     std::ostream& operator <<(std::ostream& stream, StatementList const& statement);
 
@@ -187,18 +189,18 @@ namespace basically::ast
 
     struct StatementHandlers : AstHandler
     {
+        REGISTER_HANDLER(assignment_statement, AssignmentStatementPtr)
         REGISTER_HANDLER(do_statement, DoStatementPtr)
         REGISTER_HANDLER(for_statement, ForStatementPtr)
-        REGISTER_HANDLER(sub_declaration_statement, SubDeclarationStatementPtr)
         REGISTER_HANDLER(function_declaration_statement, FunctionDeclarationStatementPtr)
         REGISTER_HANDLER(if_statement, IfStatementPtr)
         REGISTER_HANDLER(load_statement, LoadStatementPtr)
         REGISTER_HANDLER(loop_statement, LoopStatementPtr)
         REGISTER_HANDLER(select_statement, SelectStatementPtr)
         REGISTER_HANDLER(structure_declaration_statement, StructureDeclarationStatementPtr)
-        REGISTER_HANDLER(variable_declaration_statement, VariableDeclarationStatementPtr)
-        REGISTER_HANDLER(assignment_statement, AssignmentStatementPtr)
         REGISTER_HANDLER(sub_call_statement, SubCallStatementPtr)
+        REGISTER_HANDLER(sub_declaration_statement, SubDeclarationStatementPtr)
+        REGISTER_HANDLER(variable_declaration_statement, VariableDeclarationStatementPtr)
 
         std::function<void(Statement const&)> default_handler;
     };
