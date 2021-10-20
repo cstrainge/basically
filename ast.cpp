@@ -333,7 +333,11 @@ namespace basically::ast
 
         if (!statement->default_condition.empty())
         {
+            stream << indent << "else" << std::endl;
+
+            ++indent;
             stream << indent << statement->default_condition << std::endl;
+            --indent;
         }
 
         --indent;
