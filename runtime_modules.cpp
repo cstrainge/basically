@@ -65,13 +65,20 @@ namespace basically::runtime::modules
 
     Module::Module(std::string const& new_name,
                    std::fs::path const& new_base_path,
-                   ast::StatementList const& new_code,
+                   ast::StatementList const& new_ast,
                    Loader& loader)
     : name(new_name),
       base_path(new_base_path)
     {
-        process_passs_1(new_code, loader);
+        // Construct types, import code.
+        process_passs_1(new_ast, loader);
+
+        // Reslolve all references to the types, subs, and functions of this module and it's
+        // imports.
         process_passs_2();
+
+        // If we get this far, the module is technically correct, so compile what we have to machine
+        // code and make sure it's ready to run.
         process_passs_3();
     }
 
@@ -103,6 +110,8 @@ namespace basically::runtime::modules
         {
             std::visit(statement_handlers, statement);
         }
+
+        variables::Info("result", "i8", 0, false);
     }
 
     void Module::process_passs_2()
@@ -307,10 +316,11 @@ namespace basically::runtime::modules
 
         auto module_path = found_path.value();
         auto source_buffer = source::Buffer(module_path);
+
         auto token_buffer = lexing::Buffer(source_buffer);
+        std::cout << std::endl << token_buffer << std::endl;
 
         auto ast = parsing::parse_to_ast(token_buffer);
-
         std::cout << std::endl << ast << std::endl;
 
 //        auto name_without_extension = without_extension(name);

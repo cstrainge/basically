@@ -28,6 +28,7 @@ namespace basically::typing
 
         TypeRef() = default;
         TypeRef(lexing::Token const& ref_token);
+        TypeRef(std::string const& ref_name);
     };
 
 

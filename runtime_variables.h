@@ -18,6 +18,10 @@ namespace basically::runtime::variables
 
         typing::Visibility visibility;
 
+        Info(std::string const& new_name,
+             std::string const& new_type_name,
+             size_t new_array_count,
+             bool new_is_const);
         Info(ast::VariableDeclarationStatementPtr const& declaration);
 
         bool is_array() const noexcept;
@@ -43,7 +47,7 @@ namespace basically::runtime::variables
 
         public:
             Scope() = default;
-            explicit Scope(ScopePtr& parent);
+            Scope(ScopePtr& parent);
             Scope(Scope const& scope) = default;
             Scope(Scope&& scope) = default;
             ~Scope() = default;
@@ -54,6 +58,7 @@ namespace basically::runtime::variables
 
         public:
             InfoPtr find(std::string const& name) const noexcept;
+            void insert(InfoPtr const& variable);
     };
 
 

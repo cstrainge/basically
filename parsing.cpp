@@ -553,11 +553,8 @@ namespace basically::parsing
                 {
                     buffer.mark_lookahead();
 
-                    auto else_token = buffer.next();
-                    auto if_token = buffer.next();
-
-                    if (   (else_token.type == lexing::Type::KeywordElse)
-                        && (if_token.type == lexing::Type::KeywordIf))
+                    if (   (buffer.next().type == lexing::Type::KeywordElse)
+                        && (buffer.next().type == lexing::Type::KeywordIf))
                     {
                         buffer.commit_lookahead();
                         return true;
@@ -779,6 +776,7 @@ namespace basically::parsing
 
             if (found_handler == statement_parse_map.end())
             {
+                std::cout << buffer << std::endl;
                 expected_token_exception(statement_parse_map, next);
             }
 

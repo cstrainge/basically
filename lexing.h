@@ -41,6 +41,7 @@ namespace basically::lexing
 
 
     using OptionalToken = std::optional<Token>;
+    using TokenList = std::vector<Token>;
 
 
     std::ostream& operator <<(std::ostream& stream, Token const& token);
@@ -56,15 +57,21 @@ namespace basically::lexing
     bool operator ==(Token const& rhs, Type const& lhs) noexcept;
 
 
+    class Buffer;
+    std::ostream& operator <<(std::ostream& stream, Buffer const& buffer);
+
+
     class Buffer
     {
+        public:
+            friend std::ostream& operator <<(std::ostream& stream, Buffer const& buffer);
+
         private:
-            source::Buffer source_buffer;
-            std::vector<Token> lookahead_buffer;
-            std::list<size_t> marker_stack;
+            TokenList tokens;
+            std::list<size_t> index_stack;
 
         public:
-            Buffer(source::Buffer const& new_buffer);
+            Buffer(source::Buffer& source_buffer);
             Buffer(Buffer const& buffer) = default;
             Buffer(Buffer&& buffer) = default;
             ~Buffer() = default;
@@ -84,32 +91,6 @@ namespace basically::lexing
 
         private:
             bool is_in_lookahead() const noexcept;
-            Token extract_next_token() noexcept;
-
-        private:
-            Token read_string_token() noexcept;
-            Token read_number_token() noexcept;
-            Token read_symbol_token() noexcept;
-            Token read_identifier_token() noexcept;
-            Type read_double_token(Type current, Type expected, Type new_type) noexcept;
-
-            void skip_comment() noexcept;
-            void skip_whitespace() noexcept;
-
-            bool is_string_char(OptionalChar const& next) const noexcept;
-            bool is_number_start(OptionalChar const& next) const noexcept;
-            bool is_number_char(char the_char) const noexcept;
-            bool is_symbol_char(OptionalChar const& next) const noexcept;
-            bool is_identifier_start(OptionalChar const& next) const noexcept;
-            bool is_between(char next, char start, char end) const noexcept;
-            bool is_delimiter(OptionalChar const& next) const noexcept;
-            bool is_symbol(OptionalChar const& next) const noexcept;
-            bool is_comment(OptionalChar const& next) const noexcept;
-            bool is_whitespace(OptionalChar const& next) const noexcept;
-
-            template <typename CollectionType>
-            bool is_char_in_collection(OptionalChar const& next,
-                                       CollectionType const& collection) const noexcept;
     };
 
 

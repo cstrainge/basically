@@ -39,7 +39,7 @@ namespace basically::runtime::modules
             Module() = default;
             Module(std::string const& new_name,
                    std::fs::path const& new_base_path,
-                   ast::StatementList const& new_code,
+                   ast::StatementList const& new_ast,
                    Loader& loader);
             Module(Module const& module) = delete;
             Module(Module&& module) = delete;

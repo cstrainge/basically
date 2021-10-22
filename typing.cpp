@@ -15,6 +15,14 @@ namespace basically::typing
     }
 
 
+    TypeRef::TypeRef(std::string const& ref_name)
+    : ref_location(),
+      type_name(ref_name),
+      resolved_type(nullptr)
+    {
+    }
+
+
     TypeInfo::TypeInfo(ast::StructureDeclarationStatementPtr const& declaration)
     : TypeInfo(declaration->name.text, std::make_shared<StructureInfo>(declaration))
       // visibility

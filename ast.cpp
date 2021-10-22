@@ -256,8 +256,7 @@ namespace basically::ast
         auto [ main_test, main_body ] = statement->main_block;
 
         ++indent;
-        stream << "if " << main_test << " then" << std::endl
-               << indent << main_body << std::endl;
+        stream << "if " << main_test << " then" << std::endl << main_body;
         --indent;
 
         for (auto& else_if : statement->else_if_blocks)
@@ -267,7 +266,7 @@ namespace basically::ast
             stream << indent << "else if " << test << " then" << std::endl;
 
             ++indent;
-            stream << indent << body << std::endl;
+            stream << body;
             --indent;
         }
 
@@ -276,7 +275,7 @@ namespace basically::ast
             stream << indent << "else" << std::endl;
 
             ++indent;
-            stream << indent << statement->else_block << std::endl;
+            stream << statement->else_block;
             --indent;
         }
 
@@ -292,7 +291,7 @@ namespace basically::ast
 
         if (statement->alias.type != lexing::Type::None)
         {
-            stream << " as " << statement->alias;
+            stream << " as " << statement->alias.text;
         }
 
         return stream;
@@ -326,7 +325,7 @@ namespace basically::ast
             if (!body.empty())
             {
                 ++indent;
-                stream << indent << body << std::endl;
+                stream << body;
                 --indent;
             }
         }
@@ -336,7 +335,7 @@ namespace basically::ast
             stream << indent << "else" << std::endl;
 
             ++indent;
-            stream << indent << statement->default_condition << std::endl;
+            stream << statement->default_condition;
             --indent;
         }
 
