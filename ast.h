@@ -151,16 +151,17 @@ namespace basically::ast
         protected:
             template <typename DataType, typename HandlerType, typename DefaultHandlerType>
             void call_handler(DataType const& object,
-                              HandlerType const& handler,
-                              DefaultHandlerType default_handler)
+                              std::function<HandlerType>& explicit_handler,
+                              std::function<DefaultHandlerType>& fallback_handler)
             {
-                if (!handler)
+                if (explicit_handler)
                 {
-                    assert(default_handler);
-                    default_handler(object);
+                    explicit_handler(object);
+                    return;
                 }
 
-                handler(object);
+                assert(fallback_handler);
+                fallback_handler(object);
             }
     };
 

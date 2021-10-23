@@ -630,10 +630,18 @@ namespace basically::lexing
     }
 
 
+    Buffer::Buffer()
+    : tokens(1, { .type = Type::Eof }),
+      index_stack(1, 0)
+    {
+    }
+
+
     Buffer::Buffer(source::Buffer& source_buffer)
     : tokens(extract_tokens(source_buffer)),
       index_stack(1, 0)
     {
+        assert(tokens.size() >= 1);
     }
 
 

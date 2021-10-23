@@ -68,7 +68,8 @@ namespace basically::runtime::modules
                    ast::StatementList const& new_ast,
                    Loader& loader)
     : name(new_name),
-      base_path(new_base_path)
+      base_path(new_base_path),
+      variable_scope(std::make_shared<variables::Scope>())
     {
         // Construct types, import code.
         process_passs_1(new_ast, loader);
@@ -102,17 +103,23 @@ namespace basically::runtime::modules
                 .default_handler =
                     [&](auto statement)
                     {
+                        std::cout << "Add statement to " << name << " initilization."
+                                  << std::endl;
+
                         startup_ast.push_back(statement);
                     }
             };
+
+        create_variable("result", "i8", lexing::Type::LiteralInt, "0");
+        create_variable("name", "string", lexing::Type::LiteralString, name);
+        create_variable("base_path", "string", lexing::Type::LiteralString, base_path.string());
 
         for (auto const& statement : ast)
         {
             std::visit(statement_handlers, statement);
         }
-
-        variables::Info("result", "i8", 0, false);
     }
+
 
     void Module::process_passs_2()
     {
@@ -154,6 +161,40 @@ namespace basically::runtime::modules
     }
 
 
+    void Module::create_variable(std::string const& name,
+                                 std::string const& type_name,
+                                 lexing::Type literal_type,
+                                 std::string const& literal_value)
+    {
+        auto id_token = [](auto const& name) -> lexing::Token
+            {
+                return lexing::Token { .type = lexing::Type::Identifier, .text = name };
+            };
+
+        auto literal_expression = [](auto type, auto value) -> ast::Expression
+            {
+                auto value_token = lexing::Token { .type = type, .text = value };
+                return std::make_shared<ast::LiteralExpression>(value_token);
+            };
+
+        auto declaration = [](auto const& name,
+                              auto const& type,
+                              auto const& init) -> ast::VariableDeclarationStatementPtr
+            {
+                return std::make_shared<ast::VariableDeclarationStatement>(source::Location {},
+                                                                           name,
+                                                                           type,
+                                                                           init);
+            };
+
+        auto var = declaration(id_token(name),
+                               id_token(type_name),
+                               literal_expression(literal_type, literal_value));
+
+        add_variable(var);
+    }
+
+
     void Module::add_sub(ast::SubDeclarationStatementPtr const& statement)
     {
         insert_object(subs, "sub", statement);
@@ -174,36 +215,46 @@ namespace basically::runtime::modules
 
     void Module::add_variable(ast::VariableDeclarationStatementPtr const& statement)
     {
-        //insert_object(variable_scope->variables, "variable", statement);
+        // Create a variable declaration in the module's global scope.
+        insert_object(variable_scope->variables, "variable", statement);
+
+        // If the variable declaration has an initializer expression, add the declaration to the
+        // start-up code so that it can be compiled in.
+        if (statement->initializer)
+        {
+            startup_ast.push_back(statement);
+        }
     }
 
 
     template <typename ObjectType, typename StatementType>
     void Module::insert_object(
                            std::unordered_map<std::string, std::shared_ptr<ObjectType>>& collection,
-                           std::string const& type_name,
+                           std::string const& object_type_name,
                            StatementType const& statement) const
     {
         assert(statement->name.type == lexing::Type::Identifier);
 
-        auto name = statement->name.text;
-
-        ensure_unique(collection, statement->location, type_name, name);
-
+        auto object_name = statement->name.text;
         auto new_object = std::make_shared<ObjectType>(statement);
-        //collection.insert({ name, new_object });
+
+        std::cout << "Add " << object_type_name << " " << name << "." << object_name << "."
+                  << std::endl;
+
+        ensure_unique(collection, statement->location, object_type_name, object_name);
+        collection.insert({ object_name, new_object });
     }
 
 
     template <typename CollectionType>
     void Module::ensure_unique(CollectionType const& collection,
                                source::Location const& location,
-                               std::string const& type_name,
+                               std::string const& object_type_name,
                                std::string const& name) const
     {
         if (collection.find(name) != collection.end())
         {
-            duplicate_definition(location, type_name, name);
+            duplicate_definition(location, object_type_name, name);
         }
     }
 
@@ -233,7 +284,6 @@ namespace basically::runtime::modules
 
     void Loader::set_system_path(std::fs::path const& path)
     {
-        std::cout << "Set system path " << path << "." << std::endl;
         system_path = path;
     }
 
@@ -303,7 +353,6 @@ namespace basically::runtime::modules
 
         if (auto found_module = find_loaded_module(name); found_module)
         {
-            std::cout << "Returning cached module: " << name << "." << std::endl;
             return found_module;
         }
 
@@ -315,23 +364,20 @@ namespace basically::runtime::modules
         }
 
         auto module_path = found_path.value();
-        auto source_buffer = source::Buffer(module_path);
 
+        auto source_buffer = source::Buffer(module_path);
         auto token_buffer = lexing::Buffer(source_buffer);
-        std::cout << std::endl << token_buffer << std::endl;
 
         auto ast = parsing::parse_to_ast(token_buffer);
         std::cout << std::endl << ast << std::endl;
 
-//        auto name_without_extension = without_extension(name);
-//
-//        std::cout << "Loading module " << name_without_extension
-//                  << " from " << module_path << "."
-//                  << std::endl;
+        auto name_without_extension = without_extension(name);
+        auto new_module = std::make_shared<Module>(name_without_extension,
+                                                   module_path,
+                                                   ast,
+                                                   *this);
 
-        //auto new_module = std::make_shared<Module>(name_without_extension, module_path, ast, *this);
-
-        //loaded_modules.insert({ without_extension(name), new_module });
+        loaded_modules.insert({ name_without_extension, new_module });
 
         return get_builtins_module();
     }

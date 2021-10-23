@@ -59,6 +59,11 @@ namespace basically::runtime::modules
 
             void load_submodule(ast::LoadStatementPtr const& statement, Loader& loader);
 
+            void create_variable(std::string const& name,
+                                 std::string const& type_name,
+                                 lexing::Type literal_type,
+                                 std::string const& literal_value);
+
             void add_sub(ast::SubDeclarationStatementPtr const& statement);
             void add_function(ast::FunctionDeclarationStatementPtr const& statement);
             void add_structure(ast::StructureDeclarationStatementPtr const& statemnent);

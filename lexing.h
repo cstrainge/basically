@@ -71,6 +71,7 @@ namespace basically::lexing
             std::list<size_t> index_stack;
 
         public:
+            Buffer();
             Buffer(source::Buffer& source_buffer);
             Buffer(Buffer const& buffer) = default;
             Buffer(Buffer&& buffer) = default;

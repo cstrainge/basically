@@ -219,12 +219,11 @@ namespace basically::ast
 
     std::ostream& operator <<(std::ostream& stream, SubDeclarationStatementPtr const& statement)
     {
-        stream << "sub " << statement->name.text
-               << "( " << statement->parameters << ")"
+        stream << "sub " << statement->name.text << "(" << statement->parameters << ")"
                << std::endl;
 
         ++indent;
-        stream << statement->body << std::endl;
+        stream << statement->body;
         --indent;
 
         stream << indent << "end sub";
@@ -236,13 +235,12 @@ namespace basically::ast
     std::ostream& operator <<(std::ostream& stream,
                               FunctionDeclarationStatementPtr const& statement)
     {
-        stream << "function " << statement->name.text
-               << "( " << statement->parameters << ") as "
+        stream << "function " << statement->name.text << "(" << statement->parameters << ") as "
                << statement->return_type.text
                << std::endl;
 
         ++indent;
-        stream << statement->body << std::endl;
+        stream << statement->body;
         --indent;
 
         stream << indent << "end function";
